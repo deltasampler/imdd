@@ -8,6 +8,7 @@ system: Debug_System
 
 DEBUG_POINT_CAP :: 64
 DEBUG_ARROW_CAP :: 64
+DEBUG_GRID_PLANE_CAP :: 64
 
 Debug_System :: struct {
     // point
@@ -22,17 +23,26 @@ Debug_System :: struct {
     arrow_len: i32,
     arrow_vao: u32,
     arrow_vbo: u32,
-    arrow_shader: Shader
+    arrow_shader: Shader,
+
+    // grid plane
+    grid_plane_data: [dynamic]Debug_Grid_Plane,
+    grid_plane_len: i32,
+    grid_plane_vao: u32,
+    grid_plane_vbo: u32,
+    grid_plane_shader: Shader
 }
 
 init_debug_system :: proc() {
     init_point_rdr()
     init_arrow_rdr()
+    init_grid_plane_rdr()
 }
 
 free_debug_system :: proc() {
     free_point_rdr()
     free_arrow_rdr()
+    free_grid_plane_rdr()
 }
 
 render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
@@ -40,4 +50,5 @@ render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^
 
     render_point_rdr(viewport, projection, view)
     render_arrow_rdr(viewport, projection, view)
+    render_grid_plane_rdr(viewport, projection, view)
 }
