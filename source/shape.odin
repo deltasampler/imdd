@@ -1,0 +1,290 @@
+package imdd
+
+import "core:math"
+import glm "core:math/linalg/glsl"
+import gl "vendor:OpenGL"
+
+Debug_Shape :: struct {
+    translation: glm.vec3,
+    rotation: glm.quat,
+    scale: glm.vec3,
+    color: i32
+}
+
+debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
+    shape := &system.box_data[system.box_len]
+    shape.translation = position
+    shape.rotation = {}
+    shape.scale = size
+    shape.color = color
+    system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: i32) {
+    shape := &system.box_data[system.box_len]
+    shape.translation = position
+    shape.rotation = quat_rotation_xyz(rotation)
+    shape.scale = size
+    shape.color = color
+    system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_box :: proc {
+    debug_aabb,
+    debug_obb,
+}
+
+debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
+    shape := &system.cylinder_data[system.cylinder_len]
+    shape.translation = position
+    shape.rotation = {}
+    shape.scale = {size.x, size.y, size.x}
+    shape.color = color
+    system.cylinder_len = (system.cylinder_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32) {
+    shape := &system.cylinder_data[system.cylinder_len]
+    shape.translation = position
+    shape.rotation = quat_rotation_xyz(rotation)
+    shape.scale = {size.x, size.y, size.x}
+    shape.color = color
+    system.cylinder_len = (system.cylinder_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
+    height := glm.distance(start, end) / 2
+
+    shape := &system.cylinder_data[system.cylinder_len]
+    shape.translation = (start + end) / 2
+    shape.rotation = quat_rotation_dir(glm.normalize(end - start))
+    shape.scale = {radius, height, radius}
+    shape.color = color
+    system.cylinder_len = (system.cylinder_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cylinder :: proc {
+    debug_cylinder_aa,
+    debug_cylinder_o,
+    debug_cylinder_ab,
+}
+
+debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
+    shape := &system.cone_data[system.cone_len]
+    shape.translation = position
+    shape.rotation = {}
+    shape.scale = {size.x, size.y, size.x}
+    shape.color = color
+    system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32) {
+    shape := &system.cone_data[system.cone_len]
+    shape.translation = position
+    shape.rotation = quat_rotation_xyz(rotation)
+    shape.scale = {size.x, size.y, size.x}
+    shape.color = color
+    system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
+    height := glm.distance(start, end) / 2
+
+    shape := &system.cone_data[system.cone_len]
+    shape.translation = (start + end) / 2
+    shape.rotation = quat_rotation_dir(glm.normalize(start - end))
+    shape.scale = {radius, height, radius}
+    shape.color = color
+    system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+debug_cone :: proc {
+    debug_cone_aa,
+    debug_cone_o,
+    debug_cone_ab,
+}
+
+debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32) {
+    shape := &system.sphere_data[system.sphere_len]
+    shape.translation = position
+    shape.rotation = {}
+    shape.scale = {radius, radius, radius}
+    shape.color = color
+    system.sphere_len = (system.sphere_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
+
+// rendering
+SHAPE_VS :: `#version 460 core
+
+    layout(location = 0) in vec3 i_position;
+    layout(location = 1) in vec3 i_translation;
+    layout(location = 2) in vec4 i_rotation;
+    layout(location = 3) in vec3 i_scale;
+    layout(location = 4) in int i_color;
+
+    out vec3 v_color;
+    out float v_depth;
+
+    uniform mat4 u_projection;
+    uniform mat4 u_view;
+
+    vec3 rotate(vec3 v, vec4 q) {
+        return 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v) + v;
+    }
+
+    vec3 int_to_rgb(int i) {
+        return vec3(
+            (i >> 16) & 0xFF,
+            (i >> 8) & 0xFF,
+            i & 0xFF
+        ) / 255.0;
+    }
+
+    void main() {
+        vec4 position = vec4(rotate(i_position * i_scale, i_rotation) + i_translation, 1.0);
+
+        gl_Position = u_projection * u_view * position;
+        v_color = int_to_rgb(i_color);
+        v_depth = -(u_view * position).z;
+    }
+`
+
+SHAPE_FS :: `#version 460 core
+precision highp float;
+
+in vec3 v_color;
+in float v_depth;
+
+out vec4 o_frag_color;
+
+void main() {
+    o_frag_color = vec4(v_color, 1.0);
+}
+`
+
+init_shape_rdr :: proc() {
+    vertices: [dynamic]glm.vec3; defer delete(vertices)
+    indices: [dynamic]u32; defer delete(indices)
+
+    system.box_offset = geometry_lines_box(&vertices, &indices, {1, 1, 1})
+    system.cylinder_offset = geometry_lines_cylinder(&vertices, &indices, {1, 1}, 16)
+    system.cone_offset = geometry_lines_cone(&vertices, &indices, {1, 1}, 16)
+    system.sphere_offset = geometry_lines_sphere(&vertices, &indices, 1, 16)
+
+    // vao
+    gl.GenVertexArrays(1, &system.shape_vao)
+    gl.BindVertexArray(system.shape_vao)
+
+    // vbo
+    gl.GenBuffers(1, &system.shape_vbo)
+    gl.BindBuffer(gl.ARRAY_BUFFER, system.shape_vbo)
+    gl.BufferData(gl.ARRAY_BUFFER, size_of(glm.vec3) * len(vertices), &vertices[0], gl.DYNAMIC_DRAW)
+
+    // attributes
+    gl.EnableVertexAttribArray(0)
+    gl.VertexAttribPointer(0, 3, gl.FLOAT, false, size_of(glm.vec3), 0)
+
+    // ibo
+    gl.GenBuffers(1, &system.shape_ibo)
+    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, system.shape_ibo)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(u32) * len(indices), &indices[0], gl.DYNAMIC_DRAW)
+
+    // data
+    system.box_data = make([dynamic]Debug_Shape, DEBUG_SHAPE_CAP, DEBUG_SHAPE_CAP)
+    system.cylinder_data = make([dynamic]Debug_Shape, DEBUG_SHAPE_CAP, DEBUG_SHAPE_CAP)
+    system.cone_data = make([dynamic]Debug_Shape, DEBUG_SHAPE_CAP, DEBUG_SHAPE_CAP)
+    system.sphere_data = make([dynamic]Debug_Shape, DEBUG_SHAPE_CAP, DEBUG_SHAPE_CAP)
+
+    // ubo
+    gl.GenBuffers(1, &system.shape_ubo)
+    gl.BindBuffer(gl.ARRAY_BUFFER, system.shape_ubo)
+    gl.BufferData(gl.ARRAY_BUFFER, size_of(Debug_Shape) * DEBUG_SHAPE_CAP, nil, gl.DYNAMIC_DRAW)
+
+    // attributes
+    offset: uintptr = 0
+
+    gl.EnableVertexAttribArray(1)
+    gl.VertexAttribPointer(1, 3, gl.FLOAT, false, size_of(Debug_Shape), offset)
+    gl.VertexAttribDivisor(1, 1)
+    offset += size_of(glm.vec3)
+
+    gl.EnableVertexAttribArray(2)
+    gl.VertexAttribPointer(2, 4, gl.FLOAT, false, size_of(Debug_Shape), offset)
+    gl.VertexAttribDivisor(2, 1)
+    offset += size_of(glm.vec4)
+
+    gl.EnableVertexAttribArray(3)
+    gl.VertexAttribPointer(3, 3, gl.FLOAT, false, size_of(Debug_Shape), offset)
+    gl.VertexAttribDivisor(3, 1)
+    offset += size_of(glm.vec3)
+
+    gl.EnableVertexAttribArray(4)
+    gl.VertexAttribIPointer(4, 1, gl.INT, size_of(Debug_Shape), offset)
+    gl.VertexAttribDivisor(4, 1)
+
+    // shaders
+    make_shader(&system.shape_shader, gl.load_shaders_source(SHAPE_VS, SHAPE_FS))
+}
+
+free_shape_rdr :: proc() {
+    delete(system.box_data)
+    delete(system.cylinder_data)
+    delete(system.cone_data)
+    delete(system.sphere_data)
+    gl.DeleteVertexArrays(1, &system.shape_vao)
+    gl.DeleteBuffers(1, &system.shape_vbo)
+    gl.DeleteBuffers(1, &system.shape_ibo)
+    gl.DeleteBuffers(1, &system.shape_ubo)
+    delete_shader(&system.shape_shader)
+}
+
+render_shape_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+    if system.shape_len == 0 {
+        return
+    }
+
+    uniforms := &system.shape_shader.uniforms
+
+    use_shader(&system.shape_shader)
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+
+    gl.BindVertexArray(system.shape_vao)
+    gl.BindBuffer(gl.ARRAY_BUFFER, system.shape_ubo)
+
+    if system.box_len > 0 {
+        gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Shape) * DEBUG_SHAPE_CAP, &system.box_data[0])
+        gl.DrawElementsInstanced(gl.LINES, system.box_offset.len, gl.UNSIGNED_INT, cast(rawptr) (system.box_offset.pos * size_of(u32)), system.box_len)
+        system.box_len = 0
+    }
+
+    if system.cylinder_len > 0 {
+        gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Shape) * DEBUG_SHAPE_CAP, &system.cylinder_data[0])
+        gl.DrawElementsInstanced(gl.LINES, system.cylinder_offset.len, gl.UNSIGNED_INT, cast(rawptr) (system.cylinder_offset.pos * size_of(u32)), system.cylinder_len)
+        system.cylinder_len = 0
+    }
+
+    if system.cone_len > 0 {
+        gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Shape) * DEBUG_SHAPE_CAP, &system.cone_data[0])
+        gl.DrawElementsInstanced(gl.LINES, system.cone_offset.len, gl.UNSIGNED_INT, cast(rawptr) (system.cone_offset.pos * size_of(u32)), system.cone_len)
+        system.cone_len = 0
+    }
+
+    if system.sphere_len > 0 {
+        gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Shape) * DEBUG_SHAPE_CAP, &system.sphere_data[0])
+        gl.DrawElementsInstanced(gl.LINES, system.sphere_offset.len, gl.UNSIGNED_INT, cast(rawptr) (system.sphere_offset.pos * size_of(u32)), system.sphere_len)
+        system.sphere_len = 0
+    }
+
+    system.shape_len = 0
+}
