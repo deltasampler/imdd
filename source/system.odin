@@ -78,9 +78,11 @@ free_debug_system :: proc() {
 
 render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
     gl.Enable(gl.DEPTH_TEST); defer gl.Disable(gl.DEPTH_TEST)
+    gl.Enable(gl.BLEND); defer gl.Disable(gl.BLEND)
+    gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
     render_point_rdr(viewport, projection, view)
     render_arrow_rdr(viewport, projection, view)
-    render_grid_plane_rdr(viewport, projection, view)
     render_shape_rdr(viewport, projection, view)
+    render_grid_plane_rdr(viewport, projection, view)
 }
