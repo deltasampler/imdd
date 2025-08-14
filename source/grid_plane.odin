@@ -204,13 +204,13 @@ render_grid_plane_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view:
     uniforms := &system.grid_plane_shader.uniforms
 
     gl.Enable(gl.BLEND); defer gl.Disable(gl.BLEND)
-    gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
     use_shader(&system.grid_plane_shader)
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
-    gl.BindVertexArray(system.grid_plane_vao);
+    gl.BindVertexArray(system.grid_plane_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_plane_vbo)
     gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Grid_Plane) * DEBUG_GRID_PLANE_CAP, &system.grid_plane_data[0])
 

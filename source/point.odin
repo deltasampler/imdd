@@ -102,17 +102,17 @@ init_point_rdr :: proc() {
 
     gl.EnableVertexAttribArray(0)
     gl.VertexAttribPointer(0, 3, gl.FLOAT, false, size_of(Debug_Point), offset)
-    gl.VertexAttribDivisor(0, 1);
+    gl.VertexAttribDivisor(0, 1)
     offset += size_of(glm.vec3)
 
     gl.EnableVertexAttribArray(1)
     gl.VertexAttribPointer(1, 1, gl.FLOAT, false, size_of(Debug_Point), offset)
-    gl.VertexAttribDivisor(1, 1);
+    gl.VertexAttribDivisor(1, 1)
     offset += size_of(f32)
 
     gl.EnableVertexAttribArray(2)
     gl.VertexAttribIPointer(2, 1, gl.INT, size_of(Debug_Point), offset)
-    gl.VertexAttribDivisor(2, 1);
+    gl.VertexAttribDivisor(2, 1)
 
     // shaders
     make_shader(&system.point_shader, gl.load_shaders_source(POINT_VS, POINT_FS))
@@ -136,7 +136,7 @@ render_point_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
-    gl.BindVertexArray(system.point_vao);
+    gl.BindVertexArray(system.point_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.point_vbo)
     gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Point) * DEBUG_POINT_CAP, &system.point_data[0])
 

@@ -194,7 +194,7 @@ render_arrow_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
-    gl.BindVertexArray(system.arrow_vao);
+    gl.BindVertexArray(system.arrow_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.arrow_vbo)
     gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Arrow) * DEBUG_ARROW_CAP, &system.arrow_data[0])
 
