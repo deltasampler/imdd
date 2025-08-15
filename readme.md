@@ -1,7 +1,7 @@
 # Odin IMDD
 This is my simple Immediate Mode Debug Draw implemented in Odin using OpenGL
-
-### Primitives:
+![Preview](preview.png)
+## Primitives:
 
     // point
     debug_point :: proc(position: glm.vec3, radius: f32, color: i32)
