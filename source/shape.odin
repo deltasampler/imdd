@@ -1,6 +1,5 @@
 package imdd
 
-import "core:math"
 import glm "core:math/linalg/glsl"
 import gl "vendor:OpenGL"
 
@@ -122,7 +121,6 @@ debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32) {
     system.shape_len += 1
 }
 
-
 // rendering
 SHAPE_VS :: `#version 460 core
 
@@ -132,8 +130,9 @@ SHAPE_VS :: `#version 460 core
     layout(location = 3) in vec3 i_scale;
     layout(location = 4) in int i_color;
 
-    out vec3 v_color;
-    out float v_depth;
+    out Geometry_Data {
+        vec3 color;
+    } v_gd;
 
     uniform mat4 u_projection;
     uniform mat4 u_view;
@@ -151,18 +150,94 @@ SHAPE_VS :: `#version 460 core
     }
 
     void main() {
-        vec4 position = vec4(rotate(i_position * i_scale, i_rotation) + i_translation, 1.0);
-
-        gl_Position = u_projection * u_view * position;
-        v_color = int_to_rgb(i_color);
-        v_depth = -(u_view * position).z;
+        gl_Position = vec4(rotate(i_position * i_scale, i_rotation) + i_translation, 1.0);
+        v_gd.color = int_to_rgb(i_color);
     }
+`
+
+SHAPE_GS :: `#version 460 core
+
+#define LINE_WIDTH 2.0
+
+layout (lines) in;
+layout (triangle_strip, max_vertices = 4) out;
+
+out vec3 v_color;
+out float v_width;
+out float v_dist;
+out float v_depth;
+
+in Geometry_Data {
+    vec3 color;
+} v_gd[];
+
+uniform mat4 u_projection;
+uniform mat4 u_view;
+uniform vec2 u_resolution;
+
+void main() {
+    vec4 p0_world = gl_in[0].gl_Position;
+    vec4 p1_world = gl_in[1].gl_Position;
+
+    vec4 p0_view = u_view * p0_world;
+    vec4 p1_view = u_view * p1_world;
+
+    vec4 p0_clip = u_projection * p0_view;
+    vec4 p1_clip = u_projection * p1_view;
+
+    vec2 p0_ndc = p0_clip.xy / p0_clip.w;
+    vec2 p1_ndc = p1_clip.xy / p1_clip.w;
+
+    vec2 p0_screen = p0_ndc * u_resolution * 0.5;
+    vec2 p1_screen = p1_ndc * u_resolution * 0.5;
+
+    vec2 dir = normalize(p1_screen - p0_screen);
+    vec2 normal = vec2(-dir.y, dir.x);
+    vec2 offset = normal * (LINE_WIDTH * 0.5);
+
+    vec2 p0a_screen = p0_screen + offset;
+    vec2 p0b_screen = p0_screen - offset;
+    vec2 p1a_screen = p1_screen + offset;
+    vec2 p1b_screen = p1_screen - offset;
+
+    vec2 p0a_ndc = p0a_screen / (u_resolution * 0.5);
+    vec2 p0b_ndc = p0b_screen / (u_resolution * 0.5);
+    vec2 p1a_ndc = p1a_screen / (u_resolution * 0.5);
+    vec2 p1b_ndc = p1b_screen / (u_resolution * 0.5);
+
+    v_color = v_gd[0].color;
+    v_width = LINE_WIDTH;
+
+    v_dist = 0.5;
+    v_depth = -p0_view.z;
+    gl_Position = vec4(p0a_ndc * p0_clip.w, p0_clip.z, p0_clip.w);
+    EmitVertex();
+
+    v_dist = -0.5;
+    v_depth = -p0_view.z;
+    gl_Position = vec4(p0b_ndc * p0_clip.w, p0_clip.z, p0_clip.w);
+    EmitVertex();
+
+    v_dist = 0.5;
+    v_depth = -p1_view.z;
+    gl_Position = vec4(p1a_ndc * p1_clip.w, p1_clip.z, p1_clip.w);
+    EmitVertex();
+
+    v_dist = -0.5;
+    v_depth = -p1_view.z;
+    gl_Position = vec4(p1b_ndc * p1_clip.w, p1_clip.z, p1_clip.w);
+    EmitVertex();
+}
 `
 
 SHAPE_FS :: `#version 460 core
 precision highp float;
 
+#define AA_WIDTH 1.0
+
 in vec3 v_color;
+in float v_width;
+in float v_dist;
 in float v_depth;
 
 out vec4 o_frag_color;
@@ -180,7 +255,14 @@ void main() {
         }
     #endif
 
-    o_frag_color = vec4(v_color, 1.0);
+    float dist = abs(v_dist) * v_width;
+    float alpha = 1.0 - smoothstep(v_width * 0.5 - AA_WIDTH, v_width * 0.5, dist);
+
+    if (alpha <= 0.0) {
+        discard;
+    }
+
+    o_frag_color = vec4(v_color, alpha);
 }
 `
 
@@ -245,7 +327,7 @@ init_shape_rdr :: proc() {
     gl.VertexAttribDivisor(4, 1)
 
     // shaders
-    make_shader(&system.shape_shader, gl.load_shaders_source(SHAPE_VS, SHAPE_FS))
+    make_shader(&system.shape_shader, load_shaders_source(SHAPE_VS, SHAPE_GS, SHAPE_FS))
 }
 
 free_shape_rdr :: proc() {
