@@ -9,7 +9,7 @@ WINDOW_TITLE :: "Odin SDL3 Template"
 WINDOW_WIDTH :: 960
 WINDOW_HEIGHT :: 540
 GL_VERSION_MAJOR :: 4
-GL_VERSION_MINOR :: 3
+GL_VERSION_MINOR :: 6
 
 main :: proc() {
     if !sdl.Init({.VIDEO}) {
