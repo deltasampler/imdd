@@ -64,15 +64,15 @@ in Geometry_Data {
     vec3 color;
 } v_gd[];
 
-void emit_line(vec4 a, vec4 b, vec3 color) {
+void emit_line(vec4 a_view, vec4 b_view, vec3 color) {
     v_color = color;
-    v_depth = -a.z;
-    gl_Position = a;
+
+    v_depth = -a_view.z;
+    gl_Position = u_projection * a_view;
     EmitVertex();
 
-    v_color = color;
-    v_depth = -b.z;
-    gl_Position = b;
+    v_depth = -b_view.z;
+    gl_Position = u_projection * b_view;
     EmitVertex();
 
     EndPrimitive();
@@ -82,17 +82,28 @@ void main() {
     mat4 proj_view = v_gd[0].proj_view;
     vec3 color = v_gd[0].color;
 
-    mat4 pv = u_projection * u_view;
-    mat4 frustum = inverse(proj_view);
+    mat4 inv_proj_view = inverse(proj_view);
 
-    vec4 c0 = pv * frustum * vec4(-1, -1, -1, 1);
-    vec4 c1 = pv * frustum * vec4( 1, -1, -1, 1);
-    vec4 c2 = pv * frustum * vec4( 1,  1, -1, 1);
-    vec4 c3 = pv * frustum * vec4(-1,  1, -1, 1);
-    vec4 c4 = pv * frustum * vec4(-1, -1,  1, 1);
-    vec4 c5 = pv * frustum * vec4( 1, -1,  1, 1);
-    vec4 c6 = pv * frustum * vec4( 1,  1,  1, 1);
-    vec4 c7 = pv * frustum * vec4(-1,  1,  1, 1);
+    vec4 c0 = inv_proj_view * vec4(-1, -1, -1, 1);
+    vec4 c1 = inv_proj_view * vec4( 1, -1, -1, 1);
+    vec4 c2 = inv_proj_view * vec4( 1,  1, -1, 1);
+    vec4 c3 = inv_proj_view * vec4(-1,  1, -1, 1);
+    vec4 c4 = inv_proj_view * vec4(-1, -1,  1, 1);
+    vec4 c5 = inv_proj_view * vec4( 1, -1,  1, 1);
+    vec4 c6 = inv_proj_view * vec4( 1,  1,  1, 1);
+    vec4 c7 = inv_proj_view * vec4(-1,  1,  1, 1);
+
+    c0 /= c0.w; c1 /= c1.w; c2 /= c2.w; c3 /= c3.w;
+    c4 /= c4.w; c5 /= c5.w; c6 /= c6.w; c7 /= c7.w;
+
+    c0 = u_view * c0;
+    c1 = u_view * c1;
+    c2 = u_view * c2;
+    c3 = u_view * c3;
+    c4 = u_view * c4;
+    c5 = u_view * c5;
+    c6 = u_view * c6;
+    c7 = u_view * c7;
 
     emit_line(c0, c1, color);
     emit_line(c1, c2, color);
@@ -119,7 +130,19 @@ in float v_depth;
 
 out vec4 o_frag_color;
 
+uniform vec2 u_resolution;
+uniform sampler2D sa_depth;
+
 void main() {
+    #ifdef USE_DEPTH
+        vec2 rm_uv = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y) / u_resolution;
+        float rm_depth = texture(sa_depth, rm_uv).x;
+
+        if (rm_depth < v_depth) {
+            discard;
+        }
+    #endif
+
     o_frag_color = vec4(v_color, 1.0);
 }
 `
@@ -178,6 +201,7 @@ render_frustum_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^g
     uniforms := &system.frustum_shader.uniforms
 
     use_shader(&system.frustum_shader)
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 

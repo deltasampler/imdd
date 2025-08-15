@@ -13,6 +13,8 @@ DEBUG_SHAPE_CAP :: 64
 DEBUG_FRUSTUM_CAP :: 64
 
 Debug_System :: struct {
+    depth_texture: u32,
+
     // point
     point_data: [dynamic]Debug_Point,
     point_len: i32,
@@ -67,7 +69,7 @@ Debug_System :: struct {
     frustum_len: i32,
     frustum_vao: u32,
     frustum_vbo: u32,
-    frustum_shader: Shader,
+    frustum_shader: Shader
 }
 
 init_debug_system :: proc() {
@@ -91,9 +93,16 @@ render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^
     gl.Enable(gl.BLEND); defer gl.Disable(gl.BLEND)
     gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+    gl.ActiveTexture(gl.TEXTURE0)
+    gl.BindTexture(gl.TEXTURE_2D, system.depth_texture);
+
     render_point_rdr(viewport, projection, view)
     render_arrow_rdr(viewport, projection, view)
     render_shape_rdr(viewport, projection, view)
     render_frustum_rdr(viewport, projection, view)
     render_grid_plane_rdr(viewport, projection, view)
+}
+
+set_depth_texture :: proc(texture: u32) {
+    system.depth_texture = texture
 }

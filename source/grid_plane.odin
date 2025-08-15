@@ -108,6 +108,9 @@ in float v_depth;
 
 out vec4 o_frag_color;
 
+uniform vec2 u_resolution;
+uniform sampler2D sa_depth;
+
 float draw_grid(vec2 uv, vec2 line_width) {
     vec2 ddx = dFdx(uv), ddy = dFdy(uv);
     vec2 uv_deriv = vec2(length(vec2(ddx.x, ddy.x)), length(vec2(ddx.y, ddy.y)));
@@ -134,6 +137,15 @@ float draw_grid(vec2 uv, vec2 line_width) {
 }
 
 void main() {
+    #ifdef USE_DEPTH
+        vec2 rm_uv = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y) / u_resolution;
+        float rm_depth = texture(sa_depth, rm_uv).x;
+
+        if (rm_depth < v_depth) {
+            discard;
+        }
+    #endif
+
     vec2 uv = v_tex_coord;
 
     o_frag_color = vec4(v_color, draw_grid(uv, vec2(v_line_width)));
@@ -204,6 +216,7 @@ render_grid_plane_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view:
     uniforms := &system.grid_plane_shader.uniforms
 
     use_shader(&system.grid_plane_shader)
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
