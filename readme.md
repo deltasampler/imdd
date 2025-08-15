@@ -41,3 +41,6 @@ This is my simple Immediate Mode Debug Draw implemented in Odin using OpenGL
 
     // sphere
     debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32)
+
+    // frustum
+    debug_frustum :: proc(proj_view: glm.mat4, color: i32)
