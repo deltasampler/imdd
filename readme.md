@@ -1,5 +1,5 @@
-# Odin IMDD
-This is my simple Immediate Mode Debug Draw implemented in Odin using OpenGL
+# IMDD
+This is my simple Immediate Mode Debug Draw implemented in Odin and OpenGL
 ![Preview](preview.png)
 ## Primitives:
 
