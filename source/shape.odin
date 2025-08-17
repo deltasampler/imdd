@@ -14,7 +14,7 @@ debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
     shape := &system.box_data[system.box_len]
     shape.translation = position
     shape.rotation = {}
-    shape.scale = size
+    shape.scale = size / 2
     shape.color = color
     system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
@@ -24,7 +24,7 @@ debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color:
     shape := &system.box_data[system.box_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
-    shape.scale = size
+    shape.scale = size / 2
     shape.color = color
     system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
@@ -39,7 +39,7 @@ debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
     shape := &system.cylinder_data[system.cylinder_len]
     shape.translation = position
     shape.rotation = {}
-    shape.scale = {size.x, size.y, size.x}
+    shape.scale = {size.x, size.y / 2, size.x}
     shape.color = color
     system.cylinder_len = (system.cylinder_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
@@ -49,7 +49,7 @@ debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3,
     shape := &system.cylinder_data[system.cylinder_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
-    shape.scale = {size.x, size.y, size.x}
+    shape.scale = {size.x, size.y / 2, size.x}
     shape.color = color
     system.cylinder_len = (system.cylinder_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
@@ -77,7 +77,7 @@ debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
     shape := &system.cone_data[system.cone_len]
     shape.translation = position
     shape.rotation = {}
-    shape.scale = {size.x, size.y, size.x}
+    shape.scale = {size.x, size.y / 2, size.x}
     shape.color = color
     system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
@@ -87,7 +87,7 @@ debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, col
     shape := &system.cone_data[system.cone_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
-    shape.scale = {size.x, size.y, size.x}
+    shape.scale = {size.x, size.y / 2, size.x}
     shape.color = color
     system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1

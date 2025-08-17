@@ -15,7 +15,7 @@ Debug_Grid_Plane :: struct {
 debug_grid_plane_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32) {
     grid_plane := &system.grid_plane_data[system.grid_plane_len]
     grid_plane.position = position
-    grid_plane.size = size
+    grid_plane.size = size / 2
     grid_plane.normal = normal
     grid_plane.cell_size = cell_size
     grid_plane.line_width = line_width
@@ -26,7 +26,7 @@ debug_grid_plane_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3,
 debug_grid_plane_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
     grid_plane := &system.grid_plane_data[system.grid_plane_len]
     grid_plane.position = position
-    grid_plane.size = size
+    grid_plane.size = size / 2
     grid_plane.normal = {0, 1, 0}
     grid_plane.cell_size = cell_size
     grid_plane.line_width = line_width

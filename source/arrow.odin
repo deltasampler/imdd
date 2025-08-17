@@ -6,15 +6,15 @@ import gl "vendor:OpenGL"
 Debug_Arrow :: struct {
     start: glm.vec3,
     end: glm.vec3,
-    radius: f32,
+    width: f32,
     color: i32
 }
 
-debug_arrow :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
+debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32) {
     arrow := &system.arrow_data[system.arrow_len]
     arrow.start = start
     arrow.end = end
-    arrow.radius = radius
+    arrow.width = width
     arrow.color = color
     system.arrow_len = (system.arrow_len + 1) % DEBUG_ARROW_CAP
 }
@@ -24,20 +24,20 @@ ARROW_VS :: `#version 460 core
 
 layout(location = 0) in vec3 i_start;
 layout(location = 1) in vec3 i_end;
-layout(location = 2) in float i_radius;
+layout(location = 2) in float i_width;
 layout(location = 3) in int i_color;
 
 out Geometry_Data {
     vec3 start;
     vec3 end;
-    float radius;
+    float width;
     int color;
 } v_gd;
 
 void main() {
     v_gd.start = i_start;
     v_gd.end = i_end;
-    v_gd.radius = i_radius;
+    v_gd.width = i_width;
     v_gd.color = i_color;
 }
 `
@@ -56,7 +56,7 @@ uniform mat4 u_view;
 in Geometry_Data {
     vec3 start;
     vec3 end;
-    float radius;
+    float width;
     int color;
 } v_gd[];
 
@@ -71,7 +71,7 @@ vec3 int_to_rgb(int i) {
 void main() {
     vec3 start = v_gd[0].start;
     vec3 end = v_gd[0].end;
-    float radius = v_gd[0].radius;
+    float width = v_gd[0].width;
     int color = v_gd[0].color;
 
     vec3 start_view = (u_view * vec4(start, 1.0)).xyz;
@@ -83,29 +83,30 @@ void main() {
     vec3 cam_dir = normalize(vec3(0, 0, 0) - line_mid);
     vec3 perp = normalize(cross(line_dir, cam_dir));
 
-    float cap_width = radius * 2.0;
-    float cap_length = radius * 4.0;
+    float base_width = width / 2.0;
+    float cap_width = base_width * 1.5;
+    float cap_length = base_width * 3.0;
     vec3 cap_pos = end_view - line_dir * cap_length;
 
     v_color = int_to_rgb(color);
 
     // base
-    vec4 world_position = vec4(start_view - perp * radius, 1.0);
+    vec4 world_position = vec4(start_view - perp * base_width, 1.0);
     gl_Position = u_projection * world_position;
     v_depth = -world_position.z;
     EmitVertex();
 
-    world_position = vec4(start_view + perp * radius, 1.0);
+    world_position = vec4(start_view + perp * base_width, 1.0);
     gl_Position = u_projection * world_position;
     v_depth = -world_position.z;
     EmitVertex();
 
-    world_position = vec4(cap_pos - perp * radius, 1.0);;
+    world_position = vec4(cap_pos - perp * base_width, 1.0);
     gl_Position = u_projection * world_position;
     v_depth = -world_position.z;
     EmitVertex();
 
-    world_position = vec4(cap_pos + perp * radius, 1.0);
+    world_position = vec4(cap_pos + perp * base_width, 1.0);
     gl_Position = u_projection * world_position;
     v_depth = -world_position.z;
     EmitVertex();
