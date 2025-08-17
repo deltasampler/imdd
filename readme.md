@@ -9,7 +9,7 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
     debug_point :: proc(position: glm.vec3, radius: f32, color: i32)
 
     // arrow
-    debug_arrow :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32)
+    debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32)
 
     // grid from position and normal
     debug_grid_plane_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32)
@@ -19,6 +19,9 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
 
     // axis aligned bounding box
     debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32)
+
+    // axis aligned bound box (from min/max bounds)
+    debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: i32)
 
     // oriented bounding box
     debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: i32)

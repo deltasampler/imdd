@@ -20,6 +20,16 @@ debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
     system.shape_len += 1
 }
 
+debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: i32) {
+    shape := &system.box_data[system.box_len]
+    shape.translation = (min + max) / 2
+    shape.rotation = {}
+    shape.scale = glm.abs(max - min) / 2
+    shape.color = color
+    system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
+    system.shape_len += 1
+}
+
 debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: i32) {
     shape := &system.box_data[system.box_len]
     shape.translation = position
@@ -28,11 +38,6 @@ debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color:
     shape.color = color
     system.box_len = (system.box_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
-}
-
-debug_box :: proc {
-    debug_aabb,
-    debug_obb,
 }
 
 debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
@@ -67,12 +72,6 @@ debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i3
     system.shape_len += 1
 }
 
-debug_cylinder :: proc {
-    debug_cylinder_aa,
-    debug_cylinder_o,
-    debug_cylinder_ab,
-}
-
 debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
     shape := &system.cone_data[system.cone_len]
     shape.translation = position
@@ -103,12 +102,6 @@ debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
     shape.color = color
     system.cone_len = (system.cone_len + 1) % DEBUG_SHAPE_CAP
     system.shape_len += 1
-}
-
-debug_cone :: proc {
-    debug_cone_aa,
-    debug_cone_o,
-    debug_cone_ab,
 }
 
 debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32) {
