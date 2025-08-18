@@ -12,35 +12,35 @@ Debug_Grid_Plane :: struct {
     color: i32
 }
 
-debug_grid_plane_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32) {
-    grid_plane := &system.grid_plane_data[system.grid_plane_len]
-    grid_plane.position = position
-    grid_plane.size = size / 2
-    grid_plane.normal = normal
-    grid_plane.cell_size = cell_size
-    grid_plane.line_width = line_width
-    grid_plane.color = color
-    system.grid_plane_len = (system.grid_plane_len + 1) % DEBUG_GRID_PLANE_CAP
+debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32) {
+    grid := &system.grid_data[system.grid_len]
+    grid.position = position
+    grid.size = size / 2
+    grid.normal = normal
+    grid.cell_size = cell_size
+    grid.line_width = line_width
+    grid.color = color
+    system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
-debug_grid_plane_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
-    grid_plane := &system.grid_plane_data[system.grid_plane_len]
-    grid_plane.position = position
-    grid_plane.size = size / 2
-    grid_plane.normal = {0, 1, 0}
-    grid_plane.cell_size = cell_size
-    grid_plane.line_width = line_width
-    grid_plane.color = color
-    system.grid_plane_len = (system.grid_plane_len + 1) % DEBUG_GRID_PLANE_CAP
+debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+    grid := &system.grid_data[system.grid_len]
+    grid.position = position
+    grid.size = size / 2
+    grid.normal = {0, 1, 0}
+    grid.cell_size = cell_size
+    grid.line_width = line_width
+    grid.color = color
+    system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
-debug_grid_plane :: proc {
-    debug_grid_plane_n,
-    debug_grid_plane_xz,
+debug_grid :: proc {
+    debug_grid_n,
+    debug_grid_xz,
 }
 
 // rendering
-GRID_PLANE_VS :: `#version 460 core
+GRID_VS :: `#version 460 core
 
     layout(location = 0) in vec3 i_position;
     layout(location = 1) in vec2 i_size;
@@ -98,7 +98,7 @@ GRID_PLANE_VS :: `#version 460 core
     }
 `
 
-GRID_PLANE_FS :: `#version 460 core
+GRID_FS :: `#version 460 core
 precision highp float;
 
 in float v_line_width;
@@ -152,18 +152,18 @@ void main() {
 }
 `
 
-init_grid_plane_rdr :: proc() {
+init_grid_rdr :: proc() {
     // data
-    system.grid_plane_data = make([dynamic]Debug_Grid_Plane, DEBUG_GRID_PLANE_CAP, DEBUG_GRID_PLANE_CAP)
+    system.grid_data = make([dynamic]Debug_Grid_Plane, DEBUG_GRID_CAP, DEBUG_GRID_CAP)
 
     // vao
-    gl.GenVertexArrays(1, &system.grid_plane_vao)
-    gl.BindVertexArray(system.grid_plane_vao)
+    gl.GenVertexArrays(1, &system.grid_vao)
+    gl.BindVertexArray(system.grid_vao)
 
     // vbo
-    gl.GenBuffers(1, &system.grid_plane_vbo)
-    gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_plane_vbo)
-    gl.BufferData(gl.ARRAY_BUFFER, size_of(Debug_Grid_Plane) * DEBUG_GRID_PLANE_CAP, nil, gl.DYNAMIC_DRAW)
+    gl.GenBuffers(1, &system.grid_vbo)
+    gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_vbo)
+    gl.BufferData(gl.ARRAY_BUFFER, size_of(Debug_Grid_Plane) * DEBUG_GRID_CAP, nil, gl.DYNAMIC_DRAW)
 
     // attributes
     offset: uintptr = 0
@@ -198,33 +198,33 @@ init_grid_plane_rdr :: proc() {
     gl.VertexAttribDivisor(5, 1)
 
     // shaders
-    make_shader(&system.grid_plane_shader, gl.load_shaders_source(GRID_PLANE_VS, GRID_PLANE_FS))
+    make_shader(&system.grid_shader, gl.load_shaders_source(GRID_VS, GRID_FS))
 }
 
-free_grid_plane_rdr :: proc() {
-    delete(system.grid_plane_data)
-    gl.DeleteVertexArrays(1, &system.grid_plane_vao)
-    gl.DeleteBuffers(1, &system.grid_plane_vbo)
-    delete_shader(&system.grid_plane_shader)
+free_grid_rdr :: proc() {
+    delete(system.grid_data)
+    gl.DeleteVertexArrays(1, &system.grid_vao)
+    gl.DeleteBuffers(1, &system.grid_vbo)
+    delete_shader(&system.grid_shader)
 }
 
-render_grid_plane_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
-    if system.grid_plane_len == 0 {
+render_grid_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+    if system.grid_len == 0 {
         return
     }
 
-    uniforms := &system.grid_plane_shader.uniforms
+    uniforms := &system.grid_shader.uniforms
 
-    use_shader(&system.grid_plane_shader)
+    use_shader(&system.grid_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
-    gl.BindVertexArray(system.grid_plane_vao)
-    gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_plane_vbo)
-    gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Grid_Plane) * DEBUG_GRID_PLANE_CAP, &system.grid_plane_data[0])
+    gl.BindVertexArray(system.grid_vao)
+    gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_vbo)
+    gl.BufferSubData(gl.ARRAY_BUFFER, 0, size_of(Debug_Grid_Plane) * DEBUG_GRID_CAP, &system.grid_data[0])
 
-    gl.DrawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, system.grid_plane_len)
+    gl.DrawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, system.grid_len)
 
-    system.grid_plane_len = 0
+    system.grid_len = 0
 }

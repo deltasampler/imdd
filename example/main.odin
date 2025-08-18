@@ -103,7 +103,7 @@ main :: proc() {
         compute_camera_projection(&camera, f32(viewport_x) / f32(viewport_y))
         compute_camera_view(&camera)
 
-        imdd.debug_grid_plane_xz({0, -0.02, 0}, {100, 100}, {1, 1}, 0.02, 0xffffff)
+        imdd.debug_grid_xz({0, -0.02, 0}, {100, 100}, {1, 1}, 0.02, 0xffffff)
 
         imdd.debug_point({-6, 0, 4}, 0.1, 0x8a7be3)
         imdd.debug_point({-2, 0, 4}, 0.25, 0x7be3e1)

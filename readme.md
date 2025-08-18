@@ -8,14 +8,17 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
     // point
     debug_point :: proc(position: glm.vec3, radius: f32, color: i32)
 
+    // line
+    debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32)
+
     // arrow
     debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32)
 
     // grid from position and normal
-    debug_grid_plane_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32)
 
     // grid on xz plane
-    debug_grid_plane_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
 
     // axis aligned bounding box
     debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32)

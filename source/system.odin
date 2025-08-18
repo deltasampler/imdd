@@ -6,11 +6,11 @@ import gl "vendor:OpenGL"
 @(private)
 system: Debug_System
 
-DEBUG_POINT_CAP :: 64
-DEBUG_ARROW_CAP :: 64
-DEBUG_GRID_PLANE_CAP :: 64
-DEBUG_SHAPE_CAP :: 64
-DEBUG_FRUSTUM_CAP :: 64
+DEBUG_POINT_CAP :: 256
+DEBUG_LINE_CAP :: 256
+DEBUG_GRID_CAP :: 16
+DEBUG_SHAPE_CAP :: 256
+DEBUG_FRUSTUM_CAP :: 16
 
 Debug_System :: struct {
     depth_texture: u32,
@@ -22,19 +22,19 @@ Debug_System :: struct {
     point_vbo: u32,
     point_shader: Shader,
 
-    // arrow
-    arrow_data: [dynamic]Debug_Arrow,
-    arrow_len: i32,
-    arrow_vao: u32,
-    arrow_vbo: u32,
-    arrow_shader: Shader,
+    // line
+    line_data: [dynamic]Debug_Line,
+    line_len: i32,
+    line_vao: u32,
+    line_vbo: u32,
+    line_shader: Shader,
 
     // grid plane
-    grid_plane_data: [dynamic]Debug_Grid_Plane,
-    grid_plane_len: i32,
-    grid_plane_vao: u32,
-    grid_plane_vbo: u32,
-    grid_plane_shader: Shader,
+    grid_data: [dynamic]Debug_Grid_Plane,
+    grid_len: i32,
+    grid_vao: u32,
+    grid_vbo: u32,
+    grid_shader: Shader,
 
     // shape
     shape_len: i32,
@@ -74,16 +74,16 @@ Debug_System :: struct {
 
 init_debug_system :: proc() {
     init_point_rdr()
-    init_arrow_rdr()
-    init_grid_plane_rdr()
+    init_line_rdr()
+    init_grid_rdr()
     init_shape_rdr()
     init_frustum_rdr()
 }
 
 free_debug_system :: proc() {
     free_point_rdr()
-    free_arrow_rdr()
-    free_grid_plane_rdr()
+    free_line_rdr()
+    free_grid_rdr()
     free_shape_rdr()
     free_frustum_rdr()
 }
@@ -97,10 +97,10 @@ render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^
     gl.BindTexture(gl.TEXTURE_2D, system.depth_texture);
 
     render_point_rdr(viewport, projection, view)
-    render_arrow_rdr(viewport, projection, view)
+    render_line_rdr(viewport, projection, view)
     render_shape_rdr(viewport, projection, view)
     render_frustum_rdr(viewport, projection, view)
-    render_grid_plane_rdr(viewport, projection, view)
+    render_grid_rdr(viewport, projection, view)
 }
 
 set_depth_texture :: proc(texture: u32) {
