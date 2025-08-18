@@ -167,30 +167,41 @@ void main() {
     vec3 normal = imageLoad(im_normal, global_pos).rgb;
     float depth = imageLoad(im_depth, global_pos).r;
 
-    vec2 ts = 1.0 / u_resolution;
-    float edge_sum = 0.0;
-    float weight_sum = 0.0;
+    const ivec2 offsets[] = ivec2[](
+        ivec2(-1,  1),
+        ivec2( 0,  1),
+        ivec2( 1,  1),
+        ivec2(-1,  0),
+        ivec2( 0,  0),
+        ivec2( 1,  0),
+        ivec2(-1, -1),
+        ivec2( 0, -1),
+        ivec2( 1, -1)
+    );
 
-    for (int i = -2; i <= 2; i++) {
-        for (int j = -2; j <= 2; j++) {
-            ivec2 offset = ivec2(i, j);
-            ivec2 sample_pos = clamp(global_pos + offset, ivec2(0), size - ivec2(1));
+    const float kernel[] = float[](
+        -1, -1, -1,
+        -1,  8, -1,
+        -1, -1, -1
+    );
 
-            vec3 n_sample = imageLoad(im_normal, sample_pos).rgb;
-            float d_sample = imageLoad(im_depth, sample_pos).r;
+    float edge_val = 0.0;
 
-            float n_diff = length(n_sample - normal);
-            float d_diff = abs(d_sample - depth) * 5.0;
+    for (int k = 0; k < 9; k++) {
+        ivec2 sample_pos = clamp(global_pos + offsets[k], ivec2(0), size - ivec2(1));
 
-            float edge = n_diff + d_diff;
-            float weight = exp(-float(i * i + j * j) / 4.0);
-            edge_sum += edge * weight;
-            weight_sum += weight;
-        }
+        vec3 n_sample = imageLoad(im_normal, sample_pos).rgb;
+        float d_sample = imageLoad(im_depth, sample_pos).r;
+
+        float n_diff = length(n_sample - normal);
+        float d_diff = abs(d_sample - depth) / (depth + 1e-4);
+        float diff = n_diff + d_diff;
+
+        edge_val += diff * kernel[k];
     }
 
-    float edge_strength = edge_sum / weight_sum;
-    float edge = smoothstep(0.1, 0.25, edge_strength);
+    float edge_strength = abs(edge_val);
+    float edge = smoothstep(0.1, 0.2, edge_strength);
     vec3 result = mix(color.rgb, vec3(1.0), edge);
 
     imageStore(im_color, global_pos, vec4(result, color.a));
