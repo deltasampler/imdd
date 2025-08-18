@@ -72,7 +72,7 @@ Debug_System :: struct {
     frustum_shader: Shader
 }
 
-init_debug_system :: proc() {
+debug_init :: proc() {
     init_point_rdr()
     init_line_rdr()
     init_grid_rdr()
@@ -80,7 +80,7 @@ init_debug_system :: proc() {
     init_frustum_rdr()
 }
 
-free_debug_system :: proc() {
+debug_free :: proc() {
     free_point_rdr()
     free_line_rdr()
     free_grid_rdr()
@@ -88,7 +88,7 @@ free_debug_system :: proc() {
     free_frustum_rdr()
 }
 
-render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
     gl.Enable(gl.DEPTH_TEST); defer gl.Disable(gl.DEPTH_TEST)
     gl.Enable(gl.BLEND); defer gl.Disable(gl.BLEND)
     gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -103,6 +103,6 @@ render_debug_system :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^
     render_grid_rdr(viewport, projection, view)
 }
 
-set_depth_texture :: proc(texture: u32) {
+debug_set_depth_texture :: proc(texture: u32) {
     system.depth_texture = texture
 }

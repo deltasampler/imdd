@@ -54,7 +54,7 @@ main :: proc() {
     compute_camera_projection(&camera2, f32(viewport_x) / f32(viewport_y))
     compute_camera_view(&camera2)
 
-    imdd.init_debug_system(); defer imdd.free_debug_system()
+    imdd.debug_init(); defer imdd.debug_free()
 
     loop: for {
         time = sdl.GetTicks()
@@ -124,7 +124,7 @@ main :: proc() {
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-        imdd.render_debug_system(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
+        imdd.debug_render(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
 
         sdl.GL_SwapWindow(window)
     }
