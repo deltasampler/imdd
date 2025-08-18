@@ -52,3 +52,6 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
 
     // frustum
     debug_frustum :: proc(proj_view: glm.mat4, color: i32)
+
+    // mesh
+    debug_mesh :: proc(mesh: ^Debug_Mesh)

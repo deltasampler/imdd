@@ -6,11 +6,13 @@ import gl "vendor:OpenGL"
 @(private)
 system: Debug_System
 
+// can change to whatever you want
 DEBUG_POINT_CAP :: 256
 DEBUG_LINE_CAP :: 256
 DEBUG_GRID_CAP :: 16
 DEBUG_SHAPE_CAP :: 256
 DEBUG_FRUSTUM_CAP :: 16
+DEBUG_MESH_CAP :: 64
 
 Debug_System :: struct {
     depth_texture: u32,
@@ -69,7 +71,12 @@ Debug_System :: struct {
     frustum_len: i32,
     frustum_vao: u32,
     frustum_vbo: u32,
-    frustum_shader: Shader
+    frustum_shader: Shader,
+
+    // mesh
+    mesh_data: [dynamic]^Debug_Mesh,
+    mesh_len: i32,
+    mesh_shader: Shader
 }
 
 debug_init :: proc() {
@@ -78,6 +85,7 @@ debug_init :: proc() {
     init_grid_rdr()
     init_shape_rdr()
     init_frustum_rdr()
+    init_mesh_rdr()
 }
 
 debug_free :: proc() {
@@ -86,6 +94,7 @@ debug_free :: proc() {
     free_grid_rdr()
     free_shape_rdr()
     free_frustum_rdr()
+    free_mesh_rdr()
 }
 
 debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
@@ -100,6 +109,7 @@ debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat
     render_line_rdr(viewport, projection, view)
     render_shape_rdr(viewport, projection, view)
     render_frustum_rdr(viewport, projection, view)
+    render_mesh_rdr(viewport, projection, view)
     render_grid_rdr(viewport, projection, view)
 }
 

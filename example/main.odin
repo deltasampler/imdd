@@ -56,6 +56,10 @@ main :: proc() {
 
     imdd.debug_init(); defer imdd.debug_free()
 
+    mesh: imdd.Debug_Mesh;
+    imdd.debug_mesh_box(&mesh, {-6, 1, 6}, {2, 2, 2})
+    imdd.build_debug_mesh(&mesh); defer imdd.destroy_debug_mesh(&mesh)
+
     loop: for {
         time = sdl.GetTicks()
         time_delta = f32(time - time_last) / 1000
@@ -105,10 +109,9 @@ main :: proc() {
 
         imdd.debug_grid_xz({0, -0.02, 0}, {100, 100}, {1, 1}, 0.02, 0xffffff)
 
-        imdd.debug_point({-6, 0, 4}, 0.1, 0x8a7be3)
-        imdd.debug_point({-2, 0, 4}, 0.25, 0x7be3e1)
+        imdd.debug_point({-2, 0, 4}, 0.1, 0x8a7be3)
+        imdd.debug_point({0, 0, 4}, 0.25, 0x7be3e1)
         imdd.debug_point({2, 0, 4}, 0.5, 0xe3da7b)
-        imdd.debug_point({6, 0, 4}, 1, 0xd3e37b)
 
         imdd.debug_arrow({0, 0, 0}, {2, 0, 0}, 0.1, 0xcc0000)
         imdd.debug_arrow({0, 0, 0}, {0, 2, 0}, 0.1, 0x00cc00)
@@ -120,10 +123,12 @@ main :: proc() {
         imdd.debug_sphere({6, 1, -4}, 1, 0xe68ac4)
 
         imdd.debug_frustum(camera2.projection *camera2.view, 0xd1496b)
+        imdd.debug_mesh(&mesh)
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
         imdd.debug_render(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
 
         sdl.GL_SwapWindow(window)
