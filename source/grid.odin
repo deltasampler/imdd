@@ -208,7 +208,7 @@ free_grid_rdr :: proc() {
     delete_shader(&system.grid_shader)
 }
 
-render_grid_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+render_grid_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
     if system.grid_len == 0 {
         return
     }
@@ -216,7 +216,7 @@ render_grid_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.
     uniforms := &system.grid_shader.uniforms
 
     use_shader(&system.grid_shader)
-    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 

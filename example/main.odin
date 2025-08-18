@@ -91,14 +91,10 @@ main :: proc() {
     compute_camera_projection(&camera2, f32(viewport_x) / f32(viewport_y))
     compute_camera_view(&camera2)
 
-    framebuffer: imdd.Framebuffer
-    imdd.make_framebuffer(&framebuffer, 1920, 1080); defer imdd.delete_framebuffer(&framebuffer)
-    gl.BindFramebuffer(gl.FRAMEBUFFER, framebuffer.fbo)
-
     output_shader: imdd.Shader
     imdd.make_shader(&output_shader, gl.load_shaders_source(OUTPUT_VS, OUTPUT_FS))
 
-    imdd.debug_init(); defer imdd.debug_free()
+    imdd.debug_init(WINDOW_WIDTH, WINDOW_HEIGHT); defer imdd.debug_free()
 
     mesh: imdd.Debug_Mesh;
     imdd.debug_mesh_box(&mesh, {-6, 1, 6}, {2, 2, 2})
@@ -117,6 +113,8 @@ main :: proc() {
                     break loop
                 case .WINDOW_RESIZED:
                     sdl.GetWindowSize(window, &viewport_x, &viewport_y)
+
+                    imdd.debug_resize(viewport_x, viewport_y)
                 case .KEY_DOWN:
                     if event.key.scancode == sdl.Scancode.ESCAPE {
                         _ = sdl.SetWindowRelativeMouseMode(window, !sdl.GetWindowRelativeMouseMode(window))
@@ -169,7 +167,7 @@ main :: proc() {
         imdd.debug_frustum(camera2.projection *camera2.view, 0xd1496b)
         imdd.debug_mesh(&mesh)
 
-        imdd.debug_render(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
+        imdd.debug_render(&camera.projection, &camera.view)
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)

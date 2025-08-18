@@ -257,13 +257,13 @@ free_mesh_rdr :: proc() {
     delete_shader(&system.mesh_pp_shader)
 }
 
-render_mesh_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+render_mesh_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
     uniforms := &system.mesh_shader.uniforms
 
     gl.Enable(gl.CULL_FACE); defer gl.Disable(gl.CULL_FACE)
 
     use_shader(&system.mesh_shader)
-    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
 
@@ -284,6 +284,6 @@ render_mesh_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.
     gl.BindImageTexture(2, system.framebuffer.depth_tbo, 0, gl.FALSE, 0, gl.READ_WRITE, gl.RGBA32F);
 
     use_shader(&system.mesh_pp_shader)
-    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
     gl.DispatchCompute(cast(u32) glm.ceil(f32(system.framebuffer.width) / 8), cast(u32) glm.ceil(f32(system.framebuffer.height) / 8), 1)
 }

@@ -15,6 +15,9 @@ DEBUG_FRUSTUM_CAP :: 16
 DEBUG_MESH_CAP :: 64
 
 Debug_System :: struct {
+    // general
+    width: i32,
+    height: i32,
     framebuffer: Framebuffer,
     depth_texture: u32,
 
@@ -81,8 +84,10 @@ Debug_System :: struct {
     mesh_pp_shader: Shader
 }
 
-debug_init :: proc() {
-    make_framebuffer(&system.framebuffer, 1920, 1080)
+debug_init :: proc(width: i32, height: i32) {
+    system.width = width
+    system.height = height
+    make_framebuffer(&system.framebuffer, width, height)
 
     init_point_rdr()
     init_line_rdr()
@@ -103,7 +108,13 @@ debug_free :: proc() {
     free_mesh_rdr()
 }
 
-debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+debug_resize :: proc(width: i32, height: i32) {
+    system.width = width
+    system.height = height
+    resize_framebuffer(&system.framebuffer, width, height)
+}
+
+debug_render :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
     bind_framebuffer(&system.framebuffer)
 
     gl.Viewport(0, 0, system.framebuffer.width, system.framebuffer.height)
@@ -117,12 +128,12 @@ debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat
     gl.ActiveTexture(gl.TEXTURE0)
     gl.BindTexture(gl.TEXTURE_2D, system.depth_texture);
 
-    render_mesh_rdr(viewport, projection, view)
-    render_point_rdr(viewport, projection, view)
-    render_line_rdr(viewport, projection, view)
-    render_shape_rdr(viewport, projection, view)
-    render_frustum_rdr(viewport, projection, view)
-    render_grid_rdr(viewport, projection, view)
+    render_mesh_rdr(projection, view)
+    render_point_rdr(projection, view)
+    render_line_rdr(projection, view)
+    render_shape_rdr(projection, view)
+    render_frustum_rdr(projection, view)
+    render_grid_rdr(projection, view)
 
     gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }
