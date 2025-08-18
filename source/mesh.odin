@@ -39,40 +39,40 @@ debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3) {
 
     append(&mesh.vertices,
         // left
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {-1, 0, 0}, 0xff0000},
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {-1, 0, 0}, 0xff0000},
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {-1, 0, 0}, 0xff0000},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {-1, 0, 0}, 0xff0000},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {-1, 0, 0}, 0xaa0000},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {-1, 0, 0}, 0xaa0000},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {-1, 0, 0}, 0xaa0000},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {-1, 0, 0}, 0xaa0000},
 
         // right
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {1, 0, 0}, 0x00ff00},
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {1, 0, 0}, 0x00ff00},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {1, 0, 0}, 0x00ff00},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {1, 0, 0}, 0x00ff00},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {1, 0, 0}, 0x00aa00},
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {1, 0, 0}, 0x00aa00},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {1, 0, 0}, 0x00aa00},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {1, 0, 0}, 0x00aa00},
 
         // bottom
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, -1, 0}, 0x0000ff},
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, -1, 0}, 0x0000ff},
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, -1, 0}, 0x0000ff},
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, -1, 0}, 0x0000ff},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, -1, 0}, 0x0000aa},
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, -1, 0}, 0x0000aa},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, -1, 0}, 0x0000aa},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, -1, 0}, 0x0000aa},
 
         // top
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 1, 0}, 0xffff00},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 1, 0}, 0xffff00},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 1, 0}, 0xffff00},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 1, 0}, 0xffff00},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 1, 0}, 0xaaaa00},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 1, 0}, 0xaaaa00},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 1, 0}, 0xaaaa00},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 1, 0}, 0xaaaa00},
 
         // back
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, 0, 1}, 0xff00ff},
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, 0, 1}, 0xff00ff},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 0, 1}, 0xff00ff},
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 0, 1}, 0xff00ff},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, 0, 1}, 0xaa00aa},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, 0, 1}, 0xaa00aa},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 0, 1}, 0xaa00aa},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 0, 1}, 0xaa00aa},
 
         // front
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, 0, -1}, 0x00ffff},
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, 0, -1}, 0x00ffff},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 0, -1}, 0x00ffff},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 0, -1}, 0x00ffff}
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, 0, -1}, 0x00aaaa},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, 0, -1}, 0x00aaaa},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 0, -1}, 0x00aaaa},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 0, -1}, 0x00aaaa}
 
     )
 
@@ -127,6 +127,7 @@ in vec3 v_normal;
 in vec3 v_color;
 
 out vec4 o_frag_color;
+out vec4 o_frag_normal;
 
 uniform vec2 u_resolution;
 uniform mat4 u_projection;
@@ -144,6 +145,56 @@ void main() {
     #endif
 
     o_frag_color = vec4(v_color, 1.0);
+    o_frag_normal = vec4(v_normal, 1.0);
+}
+`
+
+MESH_CS :: `#version 460 core
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(rgba32f, binding = 0) uniform image2D im_color;
+layout(rgba32f, binding = 1) uniform image2D im_normal;
+layout(rgba32f, binding = 2) uniform image2D im_depth;
+
+uniform vec2 u_resolution;
+uniform sampler2D sa_depth;
+
+void main() {
+    ivec2 global_pos = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = imageSize(im_color);
+
+    vec4 color = imageLoad(im_color, global_pos);
+    vec3 normal = imageLoad(im_normal, global_pos).rgb;
+    float depth = imageLoad(im_depth, global_pos).r;
+
+    vec2 ts = 1.0 / u_resolution;
+    float edge_sum = 0.0;
+    float weight_sum = 0.0;
+
+    for (int i = -2; i <= 2; i++) {
+        for (int j = -2; j <= 2; j++) {
+            ivec2 offset = ivec2(i, j);
+            ivec2 sample_pos = clamp(global_pos + offset, ivec2(0), size - ivec2(1));
+
+            vec3 n_sample = imageLoad(im_normal, sample_pos).rgb;
+            float d_sample = imageLoad(im_depth, sample_pos).r;
+
+            float n_diff = length(n_sample - normal);
+            float d_diff = abs(d_sample - depth) * 5.0;
+
+            float edge = n_diff + d_diff;
+            float weight = exp(-float(i * i + j * j) / 4.0);
+            edge_sum += edge * weight;
+            weight_sum += weight;
+        }
+    }
+
+    float edge_strength = edge_sum / weight_sum;
+    float edge = smoothstep(0.1, 0.25, edge_strength);
+    vec3 result = mix(color.rgb, vec3(1.0), edge);
+
+    imageStore(im_color, global_pos, vec4(result, color.a));
 }
 `
 
@@ -199,16 +250,18 @@ init_mesh_rdr :: proc() {
 
     // shaders
     make_shader(&system.mesh_shader, gl.load_shaders_source(MESH_VS, MESH_FS))
+    make_shader(&system.mesh_pp_shader, gl.load_compute_source(MESH_CS))
 }
 
 free_mesh_rdr :: proc() {
     delete_shader(&system.mesh_shader)
+    delete_shader(&system.mesh_pp_shader)
 }
 
 render_mesh_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
-    gl.Enable(gl.CULL_FACE); defer gl.Disable(gl.CULL_FACE)
-
     uniforms := &system.mesh_shader.uniforms
+
+    gl.Enable(gl.CULL_FACE); defer gl.Disable(gl.CULL_FACE)
 
     use_shader(&system.mesh_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
@@ -223,4 +276,15 @@ render_mesh_rdr :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.
     }
 
     system.mesh_len = 0
+
+    // post process
+    uniforms = &system.mesh_pp_shader.uniforms
+
+    gl.BindImageTexture(0, system.framebuffer.color_tbo, 0, gl.FALSE, 0, gl.READ_WRITE, gl.RGBA32F);
+    gl.BindImageTexture(1, system.framebuffer.normal_tbo, 0, gl.FALSE, 0, gl.READ_WRITE, gl.RGBA32F);
+    gl.BindImageTexture(2, system.framebuffer.depth_tbo, 0, gl.FALSE, 0, gl.READ_WRITE, gl.RGBA32F);
+
+    use_shader(&system.mesh_pp_shader)
+    gl.Uniform2f(uniforms["u_resolution"] - 1, f32(viewport.x), f32(viewport.y))
+    gl.DispatchCompute(cast(u32) glm.ceil(f32(system.framebuffer.width) / 8), cast(u32) glm.ceil(f32(system.framebuffer.height) / 8), 1)
 }

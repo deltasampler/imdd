@@ -11,6 +11,43 @@ WINDOW_HEIGHT :: 540
 GL_VERSION_MAJOR :: 4
 GL_VERSION_MINOR :: 6
 
+OUTPUT_VS :: `#version 460 core
+    out vec2 v_tex_coord;
+
+    const vec2 positions[] = vec2[](
+        vec2(-1.0, -1.0),
+        vec2(1.0, -1.0),
+        vec2(-1.0, 1.0),
+        vec2(1.0, 1.0)
+    );
+
+    const vec2 tex_coords[] = vec2[](
+        vec2(0.0, 0.0),
+        vec2(1.0, 0.0),
+        vec2(0.0, 1.0),
+        vec2(1.0, 1.0)
+    );
+
+    void main() {
+        gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
+        v_tex_coord = tex_coords[gl_VertexID];
+    }
+`
+
+OUTPUT_FS :: `#version 460 core
+    precision highp float;
+
+    in vec2 v_tex_coord;
+
+    out vec4 o_frag_color;
+
+    uniform sampler2D sa_texture;
+
+    void main() {
+        o_frag_color = texture(sa_texture, v_tex_coord);
+    }
+`
+
 main :: proc() {
     if !sdl.Init({.VIDEO}) {
         fmt.printf("SDL ERROR: %s\n", sdl.GetError())
@@ -53,6 +90,13 @@ main :: proc() {
     camera2.fov = 45
     compute_camera_projection(&camera2, f32(viewport_x) / f32(viewport_y))
     compute_camera_view(&camera2)
+
+    framebuffer: imdd.Framebuffer
+    imdd.make_framebuffer(&framebuffer, 1920, 1080); defer imdd.delete_framebuffer(&framebuffer)
+    gl.BindFramebuffer(gl.FRAMEBUFFER, framebuffer.fbo)
+
+    output_shader: imdd.Shader
+    imdd.make_shader(&output_shader, gl.load_shaders_source(OUTPUT_VS, OUTPUT_FS))
 
     imdd.debug_init(); defer imdd.debug_free()
 
@@ -125,11 +169,17 @@ main :: proc() {
         imdd.debug_frustum(camera2.projection *camera2.view, 0xd1496b)
         imdd.debug_mesh(&mesh)
 
+        imdd.debug_render(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
+
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-        imdd.debug_render(&{viewport_x, viewport_y}, &camera.projection, &camera.view)
+        gl.ActiveTexture(gl.TEXTURE0)
+        gl.BindTexture(gl.TEXTURE_2D, imdd.debug_get_framebuffer().color_tbo)
+
+        imdd.use_shader(&output_shader)
+        gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
         sdl.GL_SwapWindow(window)
     }

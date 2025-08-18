@@ -15,6 +15,7 @@ DEBUG_FRUSTUM_CAP :: 16
 DEBUG_MESH_CAP :: 64
 
 Debug_System :: struct {
+    framebuffer: Framebuffer,
     depth_texture: u32,
 
     // point
@@ -76,10 +77,13 @@ Debug_System :: struct {
     // mesh
     mesh_data: [dynamic]^Debug_Mesh,
     mesh_len: i32,
-    mesh_shader: Shader
+    mesh_shader: Shader,
+    mesh_pp_shader: Shader
 }
 
 debug_init :: proc() {
+    make_framebuffer(&system.framebuffer, 1920, 1080)
+
     init_point_rdr()
     init_line_rdr()
     init_grid_rdr()
@@ -89,6 +93,8 @@ debug_init :: proc() {
 }
 
 debug_free :: proc() {
+    delete_framebuffer(&system.framebuffer)
+
     free_point_rdr()
     free_line_rdr()
     free_grid_rdr()
@@ -98,6 +104,12 @@ debug_free :: proc() {
 }
 
 debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat4) {
+    bind_framebuffer(&system.framebuffer)
+
+    gl.Viewport(0, 0, system.framebuffer.width, system.framebuffer.height)
+    gl.ClearColor(0, 0, 0, 1.0)
+    gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
     gl.Enable(gl.DEPTH_TEST); defer gl.Disable(gl.DEPTH_TEST)
     gl.Enable(gl.BLEND); defer gl.Disable(gl.BLEND)
     gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -105,12 +117,18 @@ debug_render :: proc(viewport: ^glm.ivec2, projection: ^glm.mat4, view: ^glm.mat
     gl.ActiveTexture(gl.TEXTURE0)
     gl.BindTexture(gl.TEXTURE_2D, system.depth_texture);
 
+    render_mesh_rdr(viewport, projection, view)
     render_point_rdr(viewport, projection, view)
     render_line_rdr(viewport, projection, view)
     render_shape_rdr(viewport, projection, view)
     render_frustum_rdr(viewport, projection, view)
-    render_mesh_rdr(viewport, projection, view)
     render_grid_rdr(viewport, projection, view)
+
+    gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+}
+
+debug_get_framebuffer :: proc() -> ^Framebuffer {
+    return &system.framebuffer
 }
 
 debug_set_depth_texture :: proc(texture: u32) {
