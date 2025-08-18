@@ -155,10 +155,9 @@ layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(rgba32f, binding = 0) uniform image2D im_color;
 layout(rgba32f, binding = 1) uniform image2D im_normal;
-layout(rgba32f, binding = 2) uniform image2D im_depth;
+layout(r32f, binding = 2) uniform image2D im_depth;
 
 uniform vec2 u_resolution;
-uniform sampler2D sa_depth;
 
 void main() {
     ivec2 global_pos = ivec2(gl_GlobalInvocationID.xy);
