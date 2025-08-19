@@ -31,7 +31,7 @@ debug_mesh :: proc(mesh: ^Debug_Mesh) {
     system.mesh_len = (system.mesh_len + 1) % DEBUG_MESH_CAP
 }
 
-debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3) {
+debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
     index := u32(len(mesh.vertices))
 
     min := position - size / 2
@@ -39,56 +39,56 @@ debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3) {
 
     append(&mesh.vertices,
         // left
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {-1, 0, 0}, 0xaa0000},
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {-1, 0, 0}, 0xaa0000},
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {-1, 0, 0}, 0xaa0000},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {-1, 0, 0}, 0xaa0000},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {-1, 0, 0}, color},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {-1, 0, 0}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {-1, 0, 0}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {-1, 0, 0}, color},
 
         // right
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {1, 0, 0}, 0x00aa00},
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {1, 0, 0}, 0x00aa00},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {1, 0, 0}, 0x00aa00},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {1, 0, 0}, 0x00aa00},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {1, 0, 0}, color},
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {1, 0, 0}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {1, 0, 0}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {1, 0, 0}, color},
 
         // bottom
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, -1, 0}, 0x0000aa},
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, -1, 0}, 0x0000aa},
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, -1, 0}, 0x0000aa},
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, -1, 0}, 0x0000aa},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, -1, 0}, color},
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, -1, 0}, color},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, -1, 0}, color},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, -1, 0}, color},
 
         // top
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 1, 0}, 0xaaaa00},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 1, 0}, 0xaaaa00},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 1, 0}, 0xaaaa00},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 1, 0}, 0xaaaa00},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 1, 0}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 1, 0}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 1, 0}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 1, 0}, color},
 
         // back
-        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, 0, 1}, 0xaa00aa},
-        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, 0, 1}, 0xaa00aa},
-        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 0, 1}, 0xaa00aa},
-        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 0, 1}, 0xaa00aa},
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 0, 1}, color},
 
         // front
-        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, 0, -1}, 0x00aaaa},
-        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, 0, -1}, 0x00aaaa},
-        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 0, -1}, 0x00aaaa},
-        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 0, -1}, 0x00aaaa}
+        Debug_Mesh_Vertex{{max.x, min.y, min.z}, {0, 0, -1}, color},
+        Debug_Mesh_Vertex{{min.x, min.y, min.z}, {0, 0, -1}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, min.z}, {0, 0, -1}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, min.z}, {0, 0, -1}, color}
 
     )
 
     append(&mesh.indices,
-        Debug_Mesh_Triangle{0, 1, 2},
-        Debug_Mesh_Triangle{0, 2, 3},
-        Debug_Mesh_Triangle{4, 5, 6},
-        Debug_Mesh_Triangle{4, 6, 7},
-        Debug_Mesh_Triangle{8, 9, 10},
-        Debug_Mesh_Triangle{8, 10, 11},
-        Debug_Mesh_Triangle{12, 13, 14},
-        Debug_Mesh_Triangle{12, 14, 15},
-        Debug_Mesh_Triangle{16, 17, 18},
-        Debug_Mesh_Triangle{16, 18, 19},
-        Debug_Mesh_Triangle{20, 21, 22},
-        Debug_Mesh_Triangle{20, 22, 23}
+        Debug_Mesh_Triangle{index + 0, index + 1, index + 2},
+        Debug_Mesh_Triangle{index + 0, index + 2, index + 3},
+        Debug_Mesh_Triangle{index + 4, index + 5, index + 6},
+        Debug_Mesh_Triangle{index + 4, index + 6, index + 7},
+        Debug_Mesh_Triangle{index + 8, index + 9, index + 10},
+        Debug_Mesh_Triangle{index + 8, index + 10, index + 11},
+        Debug_Mesh_Triangle{index + 12, index + 13, index + 14},
+        Debug_Mesh_Triangle{index + 12, index + 14, index + 15},
+        Debug_Mesh_Triangle{index + 16, index + 17, index + 18},
+        Debug_Mesh_Triangle{index + 16, index + 18, index + 19},
+        Debug_Mesh_Triangle{index + 20, index + 21, index + 22},
+        Debug_Mesh_Triangle{index + 20, index + 22, index + 23}
     )
 }
 

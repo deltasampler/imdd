@@ -97,7 +97,8 @@ main :: proc() {
     imdd.debug_init(WINDOW_WIDTH, WINDOW_HEIGHT); defer imdd.debug_free()
 
     mesh: imdd.Debug_Mesh;
-    imdd.debug_mesh_box(&mesh, {-6, 1, 6}, {2, 2, 2})
+    imdd.debug_mesh_box(&mesh, {-6, 3, 8}, {2, 4, 2}, 0xaa0000)
+    imdd.debug_mesh_box(&mesh, {-6, 0, 8}, {4, 2, 4}, 0x0000aa)
     imdd.build_debug_mesh(&mesh); defer imdd.destroy_debug_mesh(&mesh)
 
     loop: for {
