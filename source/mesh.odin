@@ -185,24 +185,16 @@ void main() {
         -1, -1, -1
     );
 
-    float edge_val = 0.0;
+    float edge = 0.0;
 
     for (int k = 0; k < 9; k++) {
         ivec2 sample_pos = clamp(global_pos + offsets[k], ivec2(0), size - ivec2(1));
+        vec3 normal_sample = imageLoad(im_normal, sample_pos).rgb;
 
-        vec3 n_sample = imageLoad(im_normal, sample_pos).rgb;
-        float d_sample = imageLoad(im_depth, sample_pos).r;
-
-        float n_diff = length(n_sample - normal);
-        float d_diff = abs(d_sample - depth) / (depth + 1e-4);
-        float diff = n_diff + d_diff;
-
-        edge_val += diff * kernel[k];
+        edge += length(normal_sample - normal) * kernel[k];
     }
 
-    float edge_strength = abs(edge_val);
-    float edge = smoothstep(0.1, 0.2, edge_strength);
-    vec3 result = mix(color.rgb, vec3(1.0), edge);
+    vec3 result = mix(color.rgb, vec3(0.0), abs(edge));
 
     imageStore(im_color, global_pos, vec4(result, color.a));
 }
