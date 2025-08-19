@@ -159,43 +159,52 @@ layout(r32f, binding = 2) uniform image2D im_depth;
 
 uniform vec2 u_resolution;
 
+const ivec2 offsets[] = ivec2[](
+    ivec2(-1,  1), ivec2(0,  1), ivec2(1,  1),
+    ivec2(-1,  0), ivec2(0,  0), ivec2(1,  0),
+    ivec2(-1, -1), ivec2(0, -1), ivec2(1, -1)
+);
+
+const float weights[] = float[](
+    1, 1, 1,
+    1, 8, 1,
+    1, 1, 1
+);
+
 void main() {
     ivec2 global_pos = ivec2(gl_GlobalInvocationID.xy);
     ivec2 size = imageSize(im_color);
 
     vec4 color = imageLoad(im_color, global_pos);
     vec3 normal = imageLoad(im_normal, global_pos).rgb;
-    float depth = imageLoad(im_depth, global_pos).r;
 
-    const ivec2 offsets[] = ivec2[](
-        ivec2(-1,  1),
-        ivec2( 0,  1),
-        ivec2( 1,  1),
-        ivec2(-1,  0),
-        ivec2( 0,  0),
-        ivec2( 1,  0),
-        ivec2(-1, -1),
-        ivec2( 0, -1),
-        ivec2( 1, -1)
-    );
-
-    const float kernel[] = float[](
-        -1, -1, -1,
-        -1,  8, -1,
-        -1, -1, -1
-    );
-
-    float edge = 0.0;
+    float edge_sum = 0.0;
+    float weight_sum = 0.0;
 
     for (int k = 0; k < 9; k++) {
-        ivec2 sample_pos = clamp(global_pos + offsets[k], ivec2(0), size - ivec2(1));
+        ivec2 sample_pos = clamp(global_pos + offsets[k] * 1, ivec2(0), size - ivec2(1));
         vec3 normal_sample = imageLoad(im_normal, sample_pos).rgb;
 
-        edge += length(normal_sample - normal) * kernel[k];
+        float local_edge = length(normal_sample - normal);
+        edge_sum += local_edge * weights[k];
+        weight_sum += weights[k];
     }
 
-    vec3 result = mix(color.rgb, vec3(0.0), abs(edge));
+    // idk what I am doing, maybe remove this
+    edge_sum /= weight_sum;
 
+    for (int k = 0; k < 9; k++) {
+        ivec2 sample_pos = clamp(global_pos + offsets[k] * 2, ivec2(0), size - ivec2(1));
+        vec3 normal_sample = imageLoad(im_normal, sample_pos).rgb;
+
+        float local_edge = length(normal_sample - normal);
+        edge_sum += local_edge * weights[k];
+        weight_sum += weights[k];
+    }
+
+    float edge = clamp(edge_sum / weight_sum, 0.0, 1.0);
+
+    vec3 result = mix(color.rgb, clamp(color.rgb, vec3(0.2), vec3(0.8)) * 3, edge);
     imageStore(im_color, global_pos, vec4(result, color.a));
 }
 `
