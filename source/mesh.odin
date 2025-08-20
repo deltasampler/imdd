@@ -190,9 +190,6 @@ void main() {
         weight_sum += weights[k];
     }
 
-    // idk what I am doing, maybe remove this
-    edge_sum /= weight_sum;
-
     for (int k = 0; k < 9; k++) {
         ivec2 sample_pos = clamp(global_pos + offsets[k] * 2, ivec2(0), size - ivec2(1));
         vec3 normal_sample = imageLoad(im_normal, sample_pos).rgb;
@@ -203,8 +200,9 @@ void main() {
     }
 
     float edge = clamp(edge_sum / weight_sum, 0.0, 1.0);
+    vec3 edge_color = max(color.r, max(color.g, color.b)) < 0.5 ? vec3(1.0) : vec3(0.0);
+    vec3 result = mix(color.rgb, edge_color, edge);
 
-    vec3 result = mix(color.rgb, clamp(color.rgb, vec3(0.2), vec3(0.8)) * 3, edge);
     imageStore(im_color, global_pos, vec4(result, color.a));
 }
 `
