@@ -18,7 +18,7 @@ Debug_Mesh_Triangle :: struct {
 Debug_Mesh :: struct {
     // cpu
     vertices: [dynamic]Debug_Mesh_Vertex,
-    indices: [dynamic]Debug_Mesh_Triangle,
+    triangles: [dynamic]Debug_Mesh_Triangle,
 
     // gpu
     vao: u32,
@@ -76,7 +76,7 @@ debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, co
 
     )
 
-    append(&mesh.indices,
+    append(&mesh.triangles,
         Debug_Mesh_Triangle{index + 0, index + 1, index + 2},
         Debug_Mesh_Triangle{index + 0, index + 2, index + 3},
         Debug_Mesh_Triangle{index + 4, index + 5, index + 6},
@@ -236,7 +236,7 @@ build_debug_mesh :: proc(mesh: ^Debug_Mesh) {
     // ibo
     gl.GenBuffers(1, &mesh.ibo)
     gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ibo)
-    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(Debug_Mesh_Triangle) * len(mesh.indices), &mesh.indices[0], gl.DYNAMIC_DRAW)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(Debug_Mesh_Triangle) * len(mesh.triangles), &mesh.triangles[0], gl.DYNAMIC_DRAW)
 }
 
 reload_debug_mesh :: proc(mesh: ^Debug_Mesh) {
@@ -244,12 +244,12 @@ reload_debug_mesh :: proc(mesh: ^Debug_Mesh) {
     gl.BufferData(gl.ARRAY_BUFFER, size_of(Debug_Mesh_Vertex) * len(mesh.vertices), &mesh.vertices[0], gl.STATIC_DRAW)
 
     gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ibo)
-    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(Debug_Mesh_Triangle) * len(mesh.indices), &mesh.indices[0], gl.DYNAMIC_DRAW)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(Debug_Mesh_Triangle) * len(mesh.triangles), &mesh.triangles[0], gl.DYNAMIC_DRAW)
 }
 
 destroy_debug_mesh :: proc(mesh: ^Debug_Mesh) {
     delete(mesh.vertices)
-    delete(mesh.indices)
+    delete(mesh.triangles)
     gl.DeleteVertexArrays(1, &mesh.vao)
     gl.DeleteBuffers(1, &mesh.vbo)
     gl.DeleteBuffers(1, &mesh.ibo)
@@ -283,7 +283,7 @@ render_mesh_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
         mesh := system.mesh_data[i]
 
         gl.BindVertexArray(mesh.vao)
-        gl.DrawElements(gl.TRIANGLES, cast(i32) len(mesh.indices) * 3, gl.UNSIGNED_INT, nil)
+        gl.DrawElements(gl.TRIANGLES, cast(i32) len(mesh.triangles) * 3, gl.UNSIGNED_INT, nil)
     }
 
     system.mesh_len = 0
