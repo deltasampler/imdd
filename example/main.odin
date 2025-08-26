@@ -79,7 +79,7 @@ main :: proc() {
     time_last := time
 
     camera: Camera; init_camera(&camera)
-    movement_speed: f32 = 30
+    movement_speed: f32 = 20
     yaw_speed: f32 = 0.002
     pitch_speed: f32 = 0.002
 

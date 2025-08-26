@@ -20,7 +20,7 @@ init_camera :: proc(camera: ^Camera) {
     camera.forward = {0, 0, -1}
     camera.world_up = {0, 1, 0}
     camera.is_locked = true
-    camera.near = 1e-3
+    camera.near = 0.1
     camera.far = 1000
     camera.fov = 90
     rotate_camera(camera, 0, 0, 0)
