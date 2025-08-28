@@ -80,7 +80,7 @@ rotate_camera :: proc(camera: ^Camera, yaw: f32, pitch: f32, roll: f32) {
 }
 
 zoom_camera :: proc(camera: ^Camera, direction: f32) {
-    camera.fov = glm.clamp(camera.fov + direction, 0.01, 180)
+    camera.fov = glm.clamp(camera.fov + direction, 0.01, 179.99)
 }
 
 point_camera_at :: proc(camera: ^Camera, point: glm.vec3) {

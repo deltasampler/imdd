@@ -94,6 +94,7 @@ main :: proc() {
     movement_speed: f32 = 256
     yaw_speed: f32 = 0.002
     pitch_speed: f32 = 0.002
+    zoom_speed: f32 = EXAMPLE == EXAMPLE_2D ? 0.2 : 20
 
     camera2: Camera; init_perspective_camera(&camera2)
     camera2.position = {0, 0, 256}
@@ -109,8 +110,15 @@ main :: proc() {
     imdd.debug_init(WINDOW_WIDTH, WINDOW_HEIGHT); defer imdd.debug_free()
 
     mesh: imdd.Debug_Mesh;
-    imdd.debug_mesh_box(&mesh, {-192, 96, 256}, {64, 128, 64}, 0xaa0000)
-    imdd.debug_mesh_box(&mesh, {-192, 0, 256}, {128, 64, 128}, 0x0000aa)
+
+    when EXAMPLE == EXAMPLE_2D {
+        imdd.debug_mesh_box2(&mesh, {-192, 96, 0}, {64, 128, 0}, 0xaa0000)
+        imdd.debug_mesh_box2(&mesh, {-192, -32, 0}, {128, 64, 0}, 0x0000aa)
+    } else {
+        imdd.debug_mesh_box3(&mesh, {-192, 96, 256}, {64, 128, 64}, 0xaa0000)
+        imdd.debug_mesh_box3(&mesh, {-192, 0, 256}, {128, 64, 128}, 0x0000aa)
+    }
+
     imdd.build_debug_mesh(&mesh); defer imdd.destroy_debug_mesh(&mesh)
 
     loop: for {
@@ -169,11 +177,11 @@ main :: proc() {
             }
 
             if key_state[sdl.Scancode.Q] {
-                zoom_camera(camera, time_delta)
+                zoom_camera(camera, time_delta * zoom_speed)
             }
 
             if key_state[sdl.Scancode.E] {
-                zoom_camera(camera, -time_delta)
+                zoom_camera(camera, -time_delta * zoom_speed)
             }
         }
 
@@ -181,18 +189,27 @@ main :: proc() {
         compute_camera_view(camera)
 
         when EXAMPLE == EXAMPLE_2D {
-            imdd.debug_grid_xy({0, 0, 0}, {16384, 16384}, {32, 32}, 0.02, 0xffffff)
+            imdd.debug_grid_xy({0, 0, -1}, {16384, 16384}, {32, 32}, 1, 0xffffff)
+            imdd.debug_grid_xy({0, 0, 0}, {16384, 16384}, {256, 256}, 2, 0xffffff)
 
-            imdd.debug_arrow({0, 0, 1}, {128, 0, 1}, 4, 0xff0000)
-            imdd.debug_arrow({0, 0, 1}, {0, 128, 0}, 4, 0x00ff00)
+            imdd.debug_arrow({0, 0, 0}, {128, 0, 0}, 4, 0xff0000)
+            imdd.debug_arrow({0, 0, 0}, {0, 128, 0}, 4, 0x00ff00)
+
+            imdd.debug_line({192, 128, 0}, {160, 183, 0}, 2, 0x00ffff);
+            imdd.debug_line({160, 183, 0}, {96, 183, 0}, 2, 0x00ffff);
+            imdd.debug_line({96, 183, 0}, {64, 128, 0}, 2, 0x00ffff);
+            imdd.debug_line({64, 128, 0}, {96, 73, 0}, 2, 0x00ffff);
+            imdd.debug_line({96, 73, 0}, {160, 73, 0}, 2, 0x00ffff);
+            imdd.debug_line({160, 73, 0}, {192, 128, 0}, 2, 0x00ffff);
 
             imdd.debug_point({32, 32, 0}, 4, 0x8a7be3)
+            imdd.debug_mesh(&mesh)
         } else {
-            imdd.debug_grid_xz({0, -2, 0}, {16384, 16384}, {32, 32}, 0.02, 0xffffff)
+            imdd.debug_grid_xz({0, -2, 0}, {16384, 16384}, {32, 32}, 1, 0xffffff)
 
             imdd.debug_point({-64, 0, 128}, 4, 0x8a7be3)
             imdd.debug_point({0, 0, 128}, 8, 0x7be3e1)
-            imdd.debug_point({64, 0, 128}, 16, 0xe3da7b)
+            imdd.debug_point({64, 0, 128}, 12, 0xe3da7b)
 
             imdd.debug_arrow({0, 0, 0}, {64, 0, 0}, 2, 0xcc0000)
             imdd.debug_arrow({0, 0, 0}, {0, 64, 0}, 2, 0x00cc00)

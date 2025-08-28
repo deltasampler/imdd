@@ -71,7 +71,7 @@ GRID_VS :: `#version 460 core
     layout(location = 4) in float i_line_width;
     layout(location = 5) in int i_color;
 
-    out float v_line_width;
+    out vec2 v_line_width;
     out vec3 v_color;
     out vec2 v_tex_coord;
     out float v_depth;
@@ -113,7 +113,7 @@ GRID_VS :: `#version 460 core
         vec4 position = vec4(tangent_x * local.x * i_size.x + tangent_y * local.y * i_size.y + i_position, 1.0);
 
         gl_Position = u_projection * u_view * position;
-        v_line_width = i_line_width;
+        v_line_width = vec2(i_line_width, i_line_width) / i_cell_size;
         v_color = int_to_rgb(i_color);
         v_tex_coord = tex_coords[gl_VertexID] * i_size / i_cell_size * 2.0;
         v_depth = -(u_view * position).z;
@@ -123,7 +123,7 @@ GRID_VS :: `#version 460 core
 GRID_FS :: `#version 460 core
 precision highp float;
 
-in float v_line_width;
+in vec2 v_line_width;
 in vec3 v_color;
 in vec2 v_tex_coord;
 in float v_depth;
@@ -170,7 +170,7 @@ void main() {
 
     vec2 uv = v_tex_coord;
 
-    o_frag_color = vec4(v_color, draw_grid(uv, vec2(v_line_width)));
+    o_frag_color = vec4(v_color, draw_grid(uv, v_line_width));
 }
 `
 

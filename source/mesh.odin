@@ -31,7 +31,26 @@ debug_mesh :: proc(mesh: ^Debug_Mesh) {
     system.mesh_len = (system.mesh_len + 1) % DEBUG_MESH_CAP
 }
 
-debug_mesh_box :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
+debug_mesh_box2 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
+    index := u32(len(mesh.vertices))
+
+    min := position - size / 2
+    max := position + size / 2
+
+    append(&mesh.vertices,
+        Debug_Mesh_Vertex{{min.x, min.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{max.x, min.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{max.x, max.y, max.z}, {0, 0, 1}, color},
+        Debug_Mesh_Vertex{{min.x, max.y, max.z}, {0, 0, 1}, color}
+    )
+
+    append(&mesh.triangles,
+        Debug_Mesh_Triangle{index + 0, index + 1, index + 2},
+        Debug_Mesh_Triangle{index + 0, index + 2, index + 3}
+    )
+}
+
+debug_mesh_box3 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
     index := u32(len(mesh.vertices))
 
     min := position - size / 2
