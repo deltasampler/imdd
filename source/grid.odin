@@ -9,7 +9,7 @@ Debug_Grid_Plane :: struct {
     normal: glm.vec3,
     cell_size: glm.vec2,
     line_width: f32,
-    color: i32
+    color: i32,
 }
 
 debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32) {
@@ -23,11 +23,33 @@ debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_
     system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
+debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+    grid := &system.grid_data[system.grid_len]
+    grid.position = position
+    grid.size = size / 2
+    grid.normal = {0, 0, 1}
+    grid.cell_size = cell_size
+    grid.line_width = line_width
+    grid.color = color
+    system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
+}
+
 debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
     grid := &system.grid_data[system.grid_len]
     grid.position = position
     grid.size = size / 2
     grid.normal = {0, 1, 0}
+    grid.cell_size = cell_size
+    grid.line_width = line_width
+    grid.color = color
+    system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
+}
+
+debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+    grid := &system.grid_data[system.grid_len]
+    grid.position = position
+    grid.size = size / 2
+    grid.normal = {1, 0, 0}
     grid.cell_size = cell_size
     grid.line_width = line_width
     grid.color = color
@@ -208,7 +230,7 @@ free_grid_rdr :: proc() {
     delete_shader(&system.grid_shader)
 }
 
-render_grid_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+render_grid_rdr :: proc() {
     if system.grid_len == 0 {
         return
     }
@@ -217,8 +239,8 @@ render_grid_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
 
     use_shader(&system.grid_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
-    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
-    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
 
     gl.BindVertexArray(system.grid_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.grid_vbo)

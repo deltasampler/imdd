@@ -11,6 +11,10 @@ WINDOW_HEIGHT :: 540
 GL_VERSION_MAJOR :: 4
 GL_VERSION_MINOR :: 6
 
+EXAMPLE_2D :: 0
+EXAMPLE_3D :: 1
+EXAMPLE :: EXAMPLE_3D
+
 OUTPUT_VS :: `#version 460 core
     out vec2 v_tex_coord;
 
@@ -78,17 +82,25 @@ main :: proc() {
     time_delta : f32 = 0
     time_last := time
 
-    camera: Camera; init_camera(&camera)
-    movement_speed: f32 = 20
+    perspective_camera: Camera; init_perspective_camera(&perspective_camera)
+    orthographic_camera: Camera; init_orthographic_camera(&orthographic_camera)
+
+    when EXAMPLE == EXAMPLE_2D {
+        camera := &orthographic_camera
+    } else {
+        camera := &perspective_camera
+    }
+
+    movement_speed: f32 = 256
     yaw_speed: f32 = 0.002
     pitch_speed: f32 = 0.002
 
-    camera2: Camera; init_camera(&camera2)
-    camera2.position = {0, 0, 10}
+    camera2: Camera; init_perspective_camera(&camera2)
+    camera2.position = {0, 0, 256}
     camera2.near = 1
-    camera2.far = 10
+    camera2.far = 256
     camera2.fov = 45
-    compute_camera_projection(&camera2, f32(viewport_x) / f32(viewport_y))
+    compute_camera_projection(&camera2, f32(viewport_x), f32(viewport_y))
     compute_camera_view(&camera2)
 
     output_shader: imdd.Shader
@@ -97,8 +109,8 @@ main :: proc() {
     imdd.debug_init(WINDOW_WIDTH, WINDOW_HEIGHT); defer imdd.debug_free()
 
     mesh: imdd.Debug_Mesh;
-    imdd.debug_mesh_box(&mesh, {-6, 3, 8}, {2, 4, 2}, 0xaa0000)
-    imdd.debug_mesh_box(&mesh, {-6, 0, 8}, {4, 2, 4}, 0x0000aa)
+    imdd.debug_mesh_box(&mesh, {-192, 96, 256}, {64, 128, 64}, 0xaa0000)
+    imdd.debug_mesh_box(&mesh, {-192, 0, 256}, {128, 64, 128}, 0x0000aa)
     imdd.build_debug_mesh(&mesh); defer imdd.destroy_debug_mesh(&mesh)
 
     loop: for {
@@ -122,7 +134,9 @@ main :: proc() {
                     }
                 case .MOUSE_MOTION:
                     if sdl.GetWindowRelativeMouseMode(window) {
-                        rotate_camera(&camera, event.motion.xrel * yaw_speed, event.motion.yrel * pitch_speed, 0)
+                        if camera.mode == .PERSPECTIVE {
+                            rotate_camera(camera, event.motion.xrel * yaw_speed, event.motion.yrel * pitch_speed, 0)
+                        }
                     }
             }
         }
@@ -131,44 +145,76 @@ main :: proc() {
             speed := time_delta * movement_speed
 
             if key_state[sdl.Scancode.A] {
-                move_camera(&camera, {-speed, 0, 0})
+                move_camera(camera, {-speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.D] {
-                move_camera(&camera, {speed, 0, 0})
+                move_camera(camera, {speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.S] {
-                move_camera(&camera, {0, 0, -speed})
+                if camera.mode == .PERSPECTIVE {
+                    move_camera(camera, {0, 0, -speed})
+                } else {
+                    move_camera(camera, {0, -speed, 0})
+                }
             }
 
             if key_state[sdl.Scancode.W] {
-                move_camera(&camera, {0, 0, speed})
+                if camera.mode == .PERSPECTIVE {
+                    move_camera(camera, {0, 0, speed})
+                } else {
+                    move_camera(camera, {0, speed, 0})
+                }
+            }
+
+            if key_state[sdl.Scancode.Q] {
+                zoom_camera(camera, time_delta)
+            }
+
+            if key_state[sdl.Scancode.E] {
+                zoom_camera(camera, -time_delta)
             }
         }
 
-        compute_camera_projection(&camera, f32(viewport_x) / f32(viewport_y))
-        compute_camera_view(&camera)
+        compute_camera_projection(camera, f32(viewport_x), f32(viewport_y))
+        compute_camera_view(camera)
 
-        imdd.debug_grid_xz({0, -0.02, 0}, {100, 100}, {1, 1}, 0.02, 0xffffff)
+        when EXAMPLE == EXAMPLE_2D {
+            imdd.debug_grid_xy({0, 0, 0}, {16384, 16384}, {32, 32}, 0.02, 0xffffff)
 
-        imdd.debug_point({-2, 0, 4}, 0.1, 0x8a7be3)
-        imdd.debug_point({0, 0, 4}, 0.25, 0x7be3e1)
-        imdd.debug_point({2, 0, 4}, 0.5, 0xe3da7b)
+            imdd.debug_arrow({0, 0, 1}, {128, 0, 1}, 4, 0xff0000)
+            imdd.debug_arrow({0, 0, 1}, {0, 128, 0}, 4, 0x00ff00)
 
-        imdd.debug_arrow({0, 0, 0}, {2, 0, 0}, 0.1, 0xcc0000)
-        imdd.debug_arrow({0, 0, 0}, {0, 2, 0}, 0.1, 0x00cc00)
-        imdd.debug_arrow({0, 0, 0}, {0, 0, -2}, 0.1, 0x0000cc)
+            imdd.debug_point({32, 32, 0}, 4, 0x8a7be3)
+        } else {
+            imdd.debug_grid_xz({0, -2, 0}, {16384, 16384}, {32, 32}, 0.02, 0xffffff)
 
-        imdd.debug_aabb({-6, 1, -4}, {2, 2, 2}, 0xebbe60)
-        imdd.debug_cylinder_aa({-2, 1, -4}, {1, 2}, 0x9fe685)
-        imdd.debug_cone_aa({2, 1, -4}, {1, 2}, 0x4963e6)
-        imdd.debug_sphere({6, 1, -4}, 1, 0xe68ac4)
+            imdd.debug_point({-64, 0, 128}, 4, 0x8a7be3)
+            imdd.debug_point({0, 0, 128}, 8, 0x7be3e1)
+            imdd.debug_point({64, 0, 128}, 16, 0xe3da7b)
 
-        imdd.debug_frustum(camera2.projection *camera2.view, 0xd1496b)
-        imdd.debug_mesh(&mesh)
+            imdd.debug_arrow({0, 0, 0}, {64, 0, 0}, 2, 0xcc0000)
+            imdd.debug_arrow({0, 0, 0}, {0, 64, 0}, 2, 0x00cc00)
+            imdd.debug_arrow({0, 0, 0}, {0, 0, -64}, 2, 0x0000cc)
 
-        imdd.debug_render(&camera.projection, &camera.view)
+            imdd.debug_aabb({-192, 32, -128}, {64, 64, 64}, 0xebbe60)
+            imdd.debug_cylinder_aa({-64, 32, -128}, {32, 64}, 0x9fe685)
+            imdd.debug_cone_aa({64, 32, -128}, {32, 64}, 0x4963e6)
+            imdd.debug_sphere({192, 32, -128}, 32, 0xe68ac4)
+
+            imdd.debug_frustum(camera2.projection * camera2.view, 0xd1496b)
+            imdd.debug_mesh(&mesh)
+        }
+
+        imdd.debug_prepare(
+            i32(camera.mode),
+            camera.position,
+            camera.forward,
+            camera.projection,
+            camera.view
+        )
+        imdd.debug_render()
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)

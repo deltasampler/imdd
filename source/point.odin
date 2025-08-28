@@ -6,7 +6,7 @@ import gl "vendor:OpenGL"
 Debug_Point :: struct {
     position: glm.vec3,
     radius: f32,
-    color: i32
+    color: i32,
 }
 
 debug_point :: proc(position: glm.vec3, radius: f32, color: i32) {
@@ -137,7 +137,7 @@ free_point_rdr :: proc() {
     delete_shader(&system.point_shader)
 }
 
-render_point_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+render_point_rdr :: proc() {
     if system.point_len == 0 {
         return
     }
@@ -146,8 +146,8 @@ render_point_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
 
     use_shader(&system.point_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
-    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
-    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
 
     gl.BindVertexArray(system.point_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.point_vbo)

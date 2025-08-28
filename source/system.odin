@@ -81,7 +81,14 @@ Debug_System :: struct {
     mesh_data: [dynamic]^Debug_Mesh,
     mesh_len: i32,
     mesh_shader: Shader,
-    mesh_pp_shader: Shader
+    mesh_pp_shader: Shader,
+
+    // uniforms
+    camera_mode: i32,
+    camera_position: glm.vec3,
+    camera_forward: glm.vec3,
+    projection: glm.mat4,
+    view: glm.mat4,
 }
 
 debug_init :: proc(width: i32, height: i32) {
@@ -114,7 +121,15 @@ debug_resize :: proc(width: i32, height: i32) {
     resize_framebuffer(&system.framebuffer, width, height)
 }
 
-debug_render :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+debug_prepare :: proc(camera_mode: i32, camera_position: glm.vec3, camera_forward: glm.vec3, projection: glm.mat4, view: glm.mat4) {
+    system.camera_mode = camera_mode
+    system.camera_position = camera_position
+    system.camera_forward = camera_forward
+    system.projection = projection
+    system.view = view
+}
+
+debug_render :: proc() {
     bind_framebuffer(&system.framebuffer)
 
     gl.Viewport(0, 0, system.framebuffer.width, system.framebuffer.height)
@@ -128,12 +143,12 @@ debug_render :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
     gl.ActiveTexture(gl.TEXTURE0)
     gl.BindTexture(gl.TEXTURE_2D, system.depth_texture);
 
-    render_mesh_rdr(projection, view)
-    render_point_rdr(projection, view)
-    render_line_rdr(projection, view)
-    render_shape_rdr(projection, view)
-    render_frustum_rdr(projection, view)
-    render_grid_rdr(projection, view)
+    render_mesh_rdr()
+    render_point_rdr()
+    render_line_rdr()
+    render_shape_rdr()
+    render_frustum_rdr()
+    render_grid_rdr()
 
     gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }

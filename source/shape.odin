@@ -7,7 +7,7 @@ Debug_Shape :: struct {
     translation: glm.vec3,
     rotation: glm.quat,
     scale: glm.vec3,
-    color: i32
+    color: i32,
 }
 
 debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
@@ -335,7 +335,7 @@ free_shape_rdr :: proc() {
     delete_shader(&system.shape_shader)
 }
 
-render_shape_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+render_shape_rdr :: proc() {
     if system.shape_len == 0 {
         return
     }
@@ -344,8 +344,8 @@ render_shape_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
 
     use_shader(&system.shape_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
-    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
-    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
 
     gl.BindVertexArray(system.shape_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.shape_ubo)

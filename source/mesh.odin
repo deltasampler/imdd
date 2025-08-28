@@ -6,13 +6,13 @@ import gl "vendor:OpenGL"
 Debug_Mesh_Vertex :: struct {
     position: glm.vec3,
     normal: glm.vec3,
-    color: i32
+    color: i32,
 }
 
 Debug_Mesh_Triangle :: struct {
     a: u32,
     b: u32,
-    c: u32
+    c: u32,
 }
 
 Debug_Mesh :: struct {
@@ -23,7 +23,7 @@ Debug_Mesh :: struct {
     // gpu
     vao: u32,
     vbo: u32,
-    ibo: u32
+    ibo: u32,
 }
 
 debug_mesh :: proc(mesh: ^Debug_Mesh) {
@@ -267,15 +267,15 @@ free_mesh_rdr :: proc() {
     delete_shader(&system.mesh_pp_shader)
 }
 
-render_mesh_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+render_mesh_rdr :: proc() {
     uniforms := &system.mesh_shader.uniforms
 
     gl.Enable(gl.CULL_FACE); defer gl.Disable(gl.CULL_FACE)
 
     use_shader(&system.mesh_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
-    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
-    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
 
     for i in 0 ..< system.mesh_len {
         mesh := system.mesh_data[i]

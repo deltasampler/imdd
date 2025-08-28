@@ -52,7 +52,7 @@ load_shaders_source :: proc(vs_source, gs_source, fs_source: string, binary_retr
 Shader :: struct {
     program: u32,
     ok: bool,
-    uniforms: Uniforms
+    uniforms: Uniforms,
 }
 
 make_shader :: proc(shader: ^Shader, program: u32, ok: bool) {

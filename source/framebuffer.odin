@@ -9,7 +9,7 @@ Framebuffer :: struct {
     fbo: u32,
     color_tbo: u32,
     normal_tbo: u32,
-    depth_tbo: u32
+    depth_tbo: u32,
 }
 
 make_framebuffer :: proc(framebuffer: ^Framebuffer, width: i32, height: i32) {

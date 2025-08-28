@@ -4,7 +4,7 @@ import glm "core:math/linalg/glsl"
 
 Index_Offset :: struct {
     pos: uintptr,
-    len: i32
+    len: i32,
 }
 
 geometry_lines_box :: proc(vertices: ^[dynamic]glm.vec3, indices: ^[dynamic]u32, size: glm.vec3) -> (offset: Index_Offset) {

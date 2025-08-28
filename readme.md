@@ -20,6 +20,12 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
     // grid on xz plane
     debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
 
+    // grid on xy plane
+    debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+
+    // grid on zy plane
+    debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+
     // axis aligned bounding box
     debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32)
 

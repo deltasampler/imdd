@@ -5,7 +5,7 @@ import gl "vendor:OpenGL"
 
 Debug_Frustum :: struct {
     proj_view: glm.mat4,
-    color: i32
+    color: i32,
 }
 
 debug_frustum :: proc(proj_view: glm.mat4, color: i32) {
@@ -193,7 +193,7 @@ free_frustum_rdr :: proc() {
     delete_shader(&system.frustum_shader)
 }
 
-render_frustum_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
+render_frustum_rdr :: proc() {
     if system.frustum_len == 0 {
         return
     }
@@ -202,8 +202,8 @@ render_frustum_rdr :: proc(projection: ^glm.mat4, view: ^glm.mat4) {
 
     use_shader(&system.frustum_shader)
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
-    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &projection[0][0])
-    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &view[0][0])
+    gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
+    gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
 
     gl.BindVertexArray(system.frustum_vao)
     gl.BindBuffer(gl.ARRAY_BUFFER, system.frustum_vbo)
