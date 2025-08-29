@@ -13,6 +13,7 @@ DEBUG_GRID_CAP :: 16
 DEBUG_SHAPE_CAP :: 256
 DEBUG_FRUSTUM_CAP :: 16
 DEBUG_MESH_CAP :: 64
+DEBUG_TEXT_CAP :: 1024
 
 Debug_System :: struct {
     // general
@@ -83,6 +84,14 @@ Debug_System :: struct {
     mesh_shader: Shader,
     mesh_pp_shader: Shader,
 
+    // text
+    text_data: [dynamic]Debug_Char,
+    text_len: i32,
+    text_vao: u32,
+    text_vbo: u32,
+    text_tbo: u32,
+    text_shader: Shader,
+
     // uniforms
     camera_mode: i32,
     camera_position: glm.vec3,
@@ -102,6 +111,7 @@ debug_init :: proc(width: i32, height: i32) {
     init_shape_rdr()
     init_frustum_rdr()
     init_mesh_rdr()
+    init_text_rdr()
 }
 
 debug_free :: proc() {
@@ -113,6 +123,7 @@ debug_free :: proc() {
     free_shape_rdr()
     free_frustum_rdr()
     free_mesh_rdr()
+    free_text_rdr()
 }
 
 debug_resize :: proc(width: i32, height: i32) {
@@ -149,6 +160,7 @@ debug_render :: proc() {
     render_shape_rdr()
     render_frustum_rdr()
     render_grid_rdr()
+    render_text_rdr()
 
     gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 }

@@ -224,6 +224,9 @@ main :: proc() {
             imdd.debug_mesh(&mesh)
         }
 
+        imdd.debug_text("Hello, World!", {0, 256, 1}, 64, 0xff0000)
+        imdd.debug_text("TEST", {0, 256 + 64, 1}, 64, 0x0000ff)
+
         imdd.debug_prepare(
             i32(camera.mode),
             camera.position,
