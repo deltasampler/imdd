@@ -120,6 +120,7 @@ MESH_VS :: `#version 460 core
 
     out vec3 v_normal;
     out vec3 v_color;
+    out vec3 v_frag_pos;
 
     uniform mat4 u_projection;
     uniform mat4 u_view;
@@ -136,6 +137,7 @@ MESH_VS :: `#version 460 core
         gl_Position = u_projection * u_view * vec4(i_position, 1.0);
         v_normal = i_normal;
         v_color = int_to_rgb(i_color);
+        v_frag_pos = i_position;
     }
 `
 
@@ -144,6 +146,7 @@ precision highp float;
 
 in vec3 v_normal;
 in vec3 v_color;
+in vec3 v_frag_pos;
 
 out vec4 o_frag_color;
 out vec4 o_frag_normal;
@@ -151,6 +154,11 @@ out vec4 o_frag_normal;
 uniform vec2 u_resolution;
 uniform mat4 u_projection;
 uniform mat4 u_view;
+uniform vec3 u_camera_position;
+uniform vec3 u_light_dir;
+uniform vec3 u_light_color;
+uniform float u_ambient_strength;
+uniform float u_specular_strength;
 uniform sampler2D sa_depth;
 
 void main() {
@@ -163,7 +171,25 @@ void main() {
         }
     #endif
 
-    o_frag_color = vec4(v_color, 1.0);
+    vec3 view_dir = normalize(u_camera_position - v_frag_pos);
+    vec3 reflect_dir = reflect(-u_light_dir, v_normal);
+
+    // ambient
+    vec3 ambient = u_light_color * u_ambient_strength;
+
+    // diffuse
+    float diffuse_factor = max(dot(v_normal, u_light_dir), 0.0);
+    vec3 diffuse = u_light_color * diffuse_factor;
+
+    // specular
+    float specular_factor = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0) * u_specular_strength;
+    vec3 specular = u_light_color * specular_factor;
+
+    // final
+    vec3 final = (ambient + diffuse + specular) * v_color;
+    vec3 result = pow(final, vec3(1.0 / 2.2));
+
+    o_frag_color = vec4(result, 1.0);
     o_frag_normal = vec4(v_normal, 1.0);
 }
 `
@@ -295,6 +321,11 @@ render_mesh_rdr :: proc() {
     gl.Uniform2f(uniforms["u_resolution"] - 1, f32(system.width), f32(system.height))
     gl.UniformMatrix4fv(uniforms["u_projection"] - 1, 1, false, &system.projection[0][0])
     gl.UniformMatrix4fv(uniforms["u_view"] - 1, 1, false, &system.view[0][0])
+    gl.Uniform3fv(uniforms["u_camera_position"] - 1, 1, &system.camera_position[0])
+    gl.Uniform3fv(uniforms["u_light_dir"] - 1, 1, &system.light_dir[0])
+    gl.Uniform3fv(uniforms["u_light_color"] - 1, 1, &system.light_color[0])
+    gl.Uniform1f(uniforms["u_ambient_strength"] - 1, system.ambient_strength)
+    gl.Uniform1f(uniforms["u_specular_strength"] - 1, system.specular_strength)
 
     for i in 0 ..< system.mesh_len {
         mesh := system.mesh_data[i]

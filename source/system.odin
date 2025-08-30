@@ -98,11 +98,22 @@ Debug_System :: struct {
     camera_forward: glm.vec3,
     projection: glm.mat4,
     view: glm.mat4,
+
+    light_dir: glm.vec3,
+    light_color: glm.vec3,
+    ambient_strength: f32,
+    specular_strength: f32,
 }
 
 debug_init :: proc(width: i32, height: i32) {
     system.width = width
     system.height = height
+
+    system.light_dir = glm.normalize([3]f32{1, 1, 1})
+    system.light_color = {1, 1, 1}
+    system.ambient_strength = 0.8
+    system.specular_strength = 0.5
+
     make_framebuffer(&system.framebuffer, width, height)
 
     init_point_rdr()
