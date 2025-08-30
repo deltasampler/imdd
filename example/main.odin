@@ -96,13 +96,13 @@ main :: proc() {
     pitch_speed: f32 = 0.002
     zoom_speed: f32 = EXAMPLE == EXAMPLE_2D ? 0.2 : 20
 
-    camera2: Camera; init_perspective_camera(&camera2)
-    camera2.position = {0, 0, 256}
-    camera2.near = 1
-    camera2.far = 256
-    camera2.fov = 45
-    compute_camera_projection(&camera2, f32(viewport_x), f32(viewport_y))
-    compute_camera_view(&camera2)
+    debug_camera: Camera; init_perspective_camera(&debug_camera)
+    debug_camera.position = {0, 0, 256}
+    debug_camera.near = 1
+    debug_camera.far = 256
+    debug_camera.fov = 45
+    compute_camera_projection(&debug_camera, f32(viewport_x), f32(viewport_y))
+    compute_camera_view(&debug_camera)
 
     output_shader: imdd.Shader
     imdd.make_shader(&output_shader, gl.load_shaders_source(OUTPUT_VS, OUTPUT_FS))
@@ -220,7 +220,7 @@ main :: proc() {
             imdd.debug_cone_aa({64, 32, -128}, {32, 64}, 0x4963e6)
             imdd.debug_sphere({192, 32, -128}, 32, 0xe68ac4)
 
-            imdd.debug_frustum(camera2.projection * camera2.view, 0xd1496b)
+            imdd.debug_frustum(debug_camera.projection * debug_camera.view, 0xd1496b)
             imdd.debug_mesh(&mesh)
         }
 
