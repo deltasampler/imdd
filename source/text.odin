@@ -13,11 +13,15 @@ Debug_Char :: struct {
 }
 
 debug_text :: proc(text: string, position: glm.vec3, size: f32, color: i32) {
+    pack :: proc(char: byte, flags: i32) -> i32 {
+        return ((flags & 0xffffff) << 8) | (i32(char) & 0xff)
+    }
+
     len := len(text)
 
     for i in 0 ..< len {
         char := &system.text_data[system.text_len]
-        char.char = i32(text[i]) - 32
+        char.char = pack((text[i]) - 32, 4)
         char.position = position
         char.offset = {-f32(len) / 2 + 0.5 + f32(i), 0}
         char.size = size
@@ -67,6 +71,14 @@ TEXT_VS :: `#version 460 core
         ) / 255.0;
     }
 
+    int unpack_char(int value) {
+        return value & 0xff;
+    }
+
+    int unpack_flags(int value) {
+        return (value >> 8) & 0xffffff;
+    }
+
     vec2 calc_tex_coord(int index) {
         vec2 tile_size = vec2(1.0) / vec2(BITMAP_SIZE);
         float col = float(index % BITMAP_SIZE.x);
@@ -83,7 +95,7 @@ TEXT_VS :: `#version 460 core
 
         gl_Position = u_projection * u_view * position;
         v_color = int_to_rgb(i_color);
-        v_tex_coord = calc_tex_coord(i_char);
+        v_tex_coord = calc_tex_coord(unpack_char(i_char));
         v_depth = -(u_view * position).z;
     }
 `
