@@ -3,7 +3,7 @@ package main
 import "core:fmt"
 import sdl "vendor:sdl3"
 import gl "vendor:OpenGL"
-import imdd "imdd/source"
+import "imdd"
 
 WINDOW_TITLE :: "Odin SDL3 Template"
 WINDOW_WIDTH :: 960
