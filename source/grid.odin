@@ -9,10 +9,10 @@ Debug_Grid_Plane :: struct {
     normal: glm.vec3,
     cell_size: glm.vec2,
     line_width: f32,
-    color: i32,
+    color: u32,
 }
 
-debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32) {
+debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: u32) {
     grid := &system.grid_data[system.grid_len]
     grid.position = position
     grid.size = size / 2
@@ -23,7 +23,7 @@ debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_
     system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
-debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32) {
     grid := &system.grid_data[system.grid_len]
     grid.position = position
     grid.size = size / 2
@@ -34,7 +34,7 @@ debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, l
     system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
-debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32) {
     grid := &system.grid_data[system.grid_len]
     grid.position = position
     grid.size = size / 2
@@ -45,7 +45,7 @@ debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, l
     system.grid_len = (system.grid_len + 1) % DEBUG_GRID_CAP
 }
 
-debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32) {
+debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32) {
     grid := &system.grid_data[system.grid_len]
     grid.position = position
     grid.size = size / 2
@@ -69,10 +69,10 @@ GRID_VS :: `#version 460 core
     layout(location = 2) in vec3 i_normal;
     layout(location = 3) in vec2 i_cell_size;
     layout(location = 4) in float i_line_width;
-    layout(location = 5) in int i_color;
+    layout(location = 5) in uint i_color;
 
     out vec2 v_line_width;
-    out vec3 v_color;
+    out vec4 v_color;
     out vec2 v_tex_coord;
     out float v_depth;
 
@@ -93,8 +93,9 @@ GRID_VS :: `#version 460 core
         vec2(1.0, 1.0)
     );
 
-    vec3 int_to_rgb(int i) {
-        return vec3(
+    vec4 unpack_rgba(uint i) {
+        return vec4(
+            (i >> 24) & 0xFF,
             (i >> 16) & 0xFF,
             (i >> 8) & 0xFF,
             i & 0xFF
@@ -114,7 +115,7 @@ GRID_VS :: `#version 460 core
 
         gl_Position = u_projection * u_view * position;
         v_line_width = vec2(i_line_width, i_line_width) / i_cell_size;
-        v_color = int_to_rgb(i_color);
+        v_color = unpack_rgba(i_color);
         v_tex_coord = tex_coords[gl_VertexID] * i_size / i_cell_size * 2.0;
         v_depth = -(u_view * position).z;
     }
@@ -124,7 +125,7 @@ GRID_FS :: `#version 460 core
 precision highp float;
 
 in vec2 v_line_width;
-in vec3 v_color;
+in vec4 v_color;
 in vec2 v_tex_coord;
 in float v_depth;
 
@@ -170,7 +171,7 @@ void main() {
 
     vec2 uv = v_tex_coord;
 
-    o_frag_color = vec4(v_color, draw_grid(uv, v_line_width));
+    o_frag_color = vec4(v_color.rgb, draw_grid(uv, v_line_width));
 }
 `
 
@@ -216,7 +217,7 @@ init_grid_rdr :: proc() {
     offset += size_of(f32)
 
     gl.EnableVertexAttribArray(5)
-    gl.VertexAttribIPointer(5, 1, gl.INT, size_of(Debug_Grid_Plane), offset)
+    gl.VertexAttribIPointer(5, 1, gl.UNSIGNED_INT, size_of(Debug_Grid_Plane), offset)
     gl.VertexAttribDivisor(5, 1)
 
     // shaders

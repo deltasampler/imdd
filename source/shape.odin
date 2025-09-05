@@ -7,10 +7,10 @@ Debug_Shape :: struct {
     translation: glm.vec3,
     rotation: glm.quat,
     scale: glm.vec3,
-    color: i32,
+    color: u32,
 }
 
-debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
+debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: u32) {
     shape := &system.box_data[system.box_len]
     shape.translation = position
     shape.rotation = {}
@@ -20,7 +20,7 @@ debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32) {
     system.shape_len += 1
 }
 
-debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: i32) {
+debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: u32) {
     shape := &system.box_data[system.box_len]
     shape.translation = (min + max) / 2
     shape.rotation = {}
@@ -30,7 +30,7 @@ debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: i32) {
     system.shape_len += 1
 }
 
-debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: i32) {
+debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: u32) {
     shape := &system.box_data[system.box_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
@@ -40,7 +40,7 @@ debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color:
     system.shape_len += 1
 }
 
-debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
+debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: u32) {
     shape := &system.cylinder_data[system.cylinder_len]
     shape.translation = position
     shape.rotation = {}
@@ -50,7 +50,7 @@ debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
     system.shape_len += 1
 }
 
-debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32) {
+debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: u32) {
     shape := &system.cylinder_data[system.cylinder_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
@@ -60,7 +60,7 @@ debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3,
     system.shape_len += 1
 }
 
-debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
+debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: u32) {
     height := glm.distance(start, end) / 2
 
     shape := &system.cylinder_data[system.cylinder_len]
@@ -72,7 +72,7 @@ debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i3
     system.shape_len += 1
 }
 
-debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
+debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: u32) {
     shape := &system.cone_data[system.cone_len]
     shape.translation = position
     shape.rotation = {}
@@ -82,7 +82,7 @@ debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) {
     system.shape_len += 1
 }
 
-debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32) {
+debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: u32) {
     shape := &system.cone_data[system.cone_len]
     shape.translation = position
     shape.rotation = quat_rotation_xyz(rotation)
@@ -92,7 +92,7 @@ debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, col
     system.shape_len += 1
 }
 
-debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
+debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: u32) {
     height := glm.distance(start, end) / 2
 
     shape := &system.cone_data[system.cone_len]
@@ -104,7 +104,7 @@ debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32) {
     system.shape_len += 1
 }
 
-debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32) {
+debug_sphere :: proc(position: glm.vec3, radius: f32, color: u32) {
     shape := &system.sphere_data[system.sphere_len]
     shape.translation = position
     shape.rotation = {}
@@ -121,10 +121,10 @@ SHAPE_VS :: `#version 460 core
     layout(location = 1) in vec3 i_translation;
     layout(location = 2) in vec4 i_rotation;
     layout(location = 3) in vec3 i_scale;
-    layout(location = 4) in int i_color;
+    layout(location = 4) in uint i_color;
 
     out Geometry_Data {
-        vec3 color;
+        vec4 color;
     } v_gd;
 
     uniform mat4 u_projection;
@@ -134,8 +134,9 @@ SHAPE_VS :: `#version 460 core
         return 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v) + v;
     }
 
-    vec3 int_to_rgb(int i) {
-        return vec3(
+    vec4 unpack_rgba(uint i) {
+        return vec4(
+            (i >> 24) & 0xFF,
             (i >> 16) & 0xFF,
             (i >> 8) & 0xFF,
             i & 0xFF
@@ -144,7 +145,7 @@ SHAPE_VS :: `#version 460 core
 
     void main() {
         gl_Position = vec4(rotate(i_position * i_scale, i_rotation) + i_translation, 1.0);
-        v_gd.color = int_to_rgb(i_color);
+        v_gd.color = unpack_rgba(i_color);
     }
 `
 
@@ -155,13 +156,13 @@ SHAPE_GS :: `#version 460 core
 layout (lines) in;
 layout (triangle_strip, max_vertices = 4) out;
 
-out vec3 v_color;
+out vec4 v_color;
 out float v_width;
 out float v_dist;
 out float v_depth;
 
 in Geometry_Data {
-    vec3 color;
+    vec4 color;
 } v_gd[];
 
 uniform mat4 u_projection;
@@ -228,7 +229,7 @@ precision highp float;
 
 #define AA_WIDTH 1.0
 
-in vec3 v_color;
+in vec4 v_color;
 in float v_width;
 in float v_dist;
 in float v_depth;
@@ -255,7 +256,7 @@ void main() {
         discard;
     }
 
-    o_frag_color = vec4(v_color, alpha);
+    o_frag_color = vec4(v_color.rgb, alpha);
 }
 `
 
@@ -316,7 +317,7 @@ init_shape_rdr :: proc() {
     offset += size_of(glm.vec3)
 
     gl.EnableVertexAttribArray(4)
-    gl.VertexAttribIPointer(4, 1, gl.INT, size_of(Debug_Shape), offset)
+    gl.VertexAttribIPointer(4, 1, gl.UNSIGNED_INT, size_of(Debug_Shape), offset)
     gl.VertexAttribDivisor(4, 1)
 
     // shaders

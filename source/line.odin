@@ -10,11 +10,11 @@ Debug_Line :: struct {
     start: glm.vec3,
     end: glm.vec3,
     width: f32,
-    color: i32,
+    color: u32,
     bit: i32,
 }
 
-debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32) {
+debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: u32) {
     line := &system.line_data[system.line_len]
     line.start = start
     line.end = end
@@ -24,7 +24,7 @@ debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32) {
     system.line_len = (system.line_len + 1) % DEBUG_LINE_CAP
 }
 
-debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32) {
+debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: u32) {
     line := &system.line_data[system.line_len]
     line.start = start
     line.end = end
@@ -40,14 +40,14 @@ LINE_VS :: `#version 460 core
 layout(location = 0) in vec3 i_start;
 layout(location = 1) in vec3 i_end;
 layout(location = 2) in float i_width;
-layout(location = 3) in int i_color;
+layout(location = 3) in uint i_color;
 layout(location = 4) in int i_bit;
 
 out Geometry_Data {
     vec3 start;
     vec3 end;
     float width;
-    int color;
+    uint color;
     int bit;
 } v_gd;
 
@@ -68,7 +68,7 @@ LINE_GS :: `#version 460 core
 layout (points) in;
 layout (triangle_strip, max_vertices = 7) out;
 
-out vec3 v_color;
+out vec4 v_color;
 out float v_depth;
 
 uniform mat4 u_projection;
@@ -81,12 +81,13 @@ in Geometry_Data {
     vec3 start;
     vec3 end;
     float width;
-    int color;
+    uint color;
     int bit;
 } v_gd[];
 
-vec3 int_to_rgb(int i) {
-    return vec3(
+vec4 unpack_rgba(uint i) {
+    return vec4(
+        (i >> 24) & 0xFF,
         (i >> 16) & 0xFF,
         (i >> 8) & 0xFF,
         i & 0xFF
@@ -97,7 +98,7 @@ void main() {
     vec3 start = v_gd[0].start;
     vec3 end   = v_gd[0].end;
     float width = v_gd[0].width;
-    int color   = v_gd[0].color;
+    uint color   = v_gd[0].color;
     int bit     = v_gd[0].bit;
 
     vec3 start_view = (u_view * vec4(start, 1.0)).xyz;
@@ -113,7 +114,7 @@ void main() {
     float cap_length = base_width * 8.0;
     vec3 cap_pos = bool(bit & LINE_MODE_ARROW) ? end_view - line_dir * cap_length : end_view;
 
-    v_color = int_to_rgb(color);
+    v_color = unpack_rgba(color);
 
     vec3 verts[4] = vec3[4](
         start_view - perp * base_width,
@@ -147,7 +148,7 @@ void main() {
 LINE_FS :: `#version 460 core
 precision highp float;
 
-in vec3 v_color;
+in vec4 v_color;
 in float v_depth;
 
 out vec4 o_frag_color;
@@ -165,7 +166,7 @@ void main() {
         }
     #endif
 
-    o_frag_color = vec4(v_color, 1.0);
+    o_frag_color = v_color;
 }
 `
 
@@ -198,7 +199,7 @@ init_line_rdr :: proc() {
     offset += size_of(f32)
 
     gl.EnableVertexAttribArray(3)
-    gl.VertexAttribIPointer(3, 1, gl.INT, size_of(Debug_Line), offset)
+    gl.VertexAttribIPointer(3, 1, gl.UNSIGNED_INT, size_of(Debug_Line), offset)
     offset += size_of(i32)
 
     gl.EnableVertexAttribArray(4)

@@ -6,7 +6,7 @@ import gl "vendor:OpenGL"
 Debug_Mesh_Vertex :: struct {
     position: glm.vec3,
     normal: glm.vec3,
-    color: i32,
+    color: u32,
 }
 
 Debug_Mesh_Triangle :: struct {
@@ -31,7 +31,7 @@ debug_mesh :: proc(mesh: ^Debug_Mesh) {
     system.mesh_len = (system.mesh_len + 1) % DEBUG_MESH_CAP
 }
 
-debug_mesh_box2 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
+debug_mesh_box2 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: u32) {
     index := u32(len(mesh.vertices))
 
     min := position - size / 2
@@ -50,7 +50,7 @@ debug_mesh_box2 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, c
     )
 }
 
-debug_mesh_box3 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: i32) {
+debug_mesh_box3 :: proc(mesh: ^Debug_Mesh, position: glm.vec3, size: glm.vec3, color: u32) {
     index := u32(len(mesh.vertices))
 
     min := position - size / 2
@@ -116,17 +116,18 @@ MESH_VS :: `#version 460 core
 
     layout(location = 0) in vec3 i_position;
     layout(location = 1) in vec3 i_normal;
-    layout(location = 2) in int i_color;
+    layout(location = 2) in uint i_color;
 
     out vec3 v_normal;
-    out vec3 v_color;
+    out vec4 v_color;
     out vec3 v_frag_pos;
 
     uniform mat4 u_projection;
     uniform mat4 u_view;
 
-    vec3 int_to_rgb(int i) {
-        return vec3(
+    vec4 unpack_rgba(uint i) {
+        return vec4(
+            (i >> 24) & 0xFF,
             (i >> 16) & 0xFF,
             (i >> 8) & 0xFF,
             i & 0xFF
@@ -136,7 +137,7 @@ MESH_VS :: `#version 460 core
     void main() {
         gl_Position = u_projection * u_view * vec4(i_position, 1.0);
         v_normal = i_normal;
-        v_color = int_to_rgb(i_color);
+        v_color = unpack_rgba(i_color);
         v_frag_pos = i_position;
     }
 `
@@ -145,7 +146,7 @@ MESH_FS :: `#version 460 core
 precision highp float;
 
 in vec3 v_normal;
-in vec3 v_color;
+in vec4 v_color;
 in vec3 v_frag_pos;
 
 out vec4 o_frag_color;
@@ -186,7 +187,7 @@ void main() {
     vec3 specular = u_light_color * specular_factor;
 
     // final
-    vec3 final = (ambient + diffuse + specular) * v_color;
+    vec3 final = (ambient + diffuse + specular) * v_color.rgb;
     vec3 result = pow(final, vec3(1.0 / 2.2));
 
     o_frag_color = vec4(result, 1.0);
@@ -274,7 +275,7 @@ build_debug_mesh :: proc(mesh: ^Debug_Mesh) {
     offset += size_of(glm.vec3)
 
     gl.EnableVertexAttribArray(2)
-    gl.VertexAttribIPointer(2, 1, gl.INT, size_of(Debug_Mesh_Vertex), offset)
+    gl.VertexAttribIPointer(2, 1, gl.UNSIGNED_INT, size_of(Debug_Mesh_Vertex), offset)
 
     // ibo
     gl.GenBuffers(1, &mesh.ibo)

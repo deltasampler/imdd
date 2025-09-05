@@ -5,10 +5,10 @@ import gl "vendor:OpenGL"
 
 Debug_Frustum :: struct {
     proj_view: glm.mat4,
-    color: i32,
+    color: u32,
 }
 
-debug_frustum :: proc(proj_view: glm.mat4, color: i32) {
+debug_frustum :: proc(proj_view: glm.mat4, color: u32) {
     frustum := &system.frustum_data[system.frustum_len]
     frustum.proj_view = proj_view
     frustum.color = color
@@ -22,15 +22,16 @@ layout(location = 0) in vec4 i_proj_view0;
 layout(location = 1) in vec4 i_proj_view1;
 layout(location = 2) in vec4 i_proj_view2;
 layout(location = 3) in vec4 i_proj_view3;
-layout(location = 4) in int i_color;
+layout(location = 4) in uint i_color;
 
 out Geometry_Data {
     mat4 proj_view;
-    vec3 color;
+    vec4 color;
 } v_gd;
 
-vec3 int_to_rgb(int i) {
-    return vec3(
+vec4 unpack_rgba(uint i) {
+    return vec4(
+        (i >> 24) & 0xFF,
         (i >> 16) & 0xFF,
         (i >> 8) & 0xFF,
         i & 0xFF
@@ -44,7 +45,7 @@ void main() {
         i_proj_view2,
         i_proj_view3
     );
-    v_gd.color = int_to_rgb(i_color);
+    v_gd.color = unpack_rgba(i_color);
 }
 `
 
@@ -53,7 +54,7 @@ FRUSTUM_GS :: `#version 460 core
 layout (points) in;
 layout (line_strip, max_vertices = 24) out;
 
-out vec3 v_color;
+out vec4 v_color;
 out float v_depth;
 
 uniform mat4 u_projection;
@@ -61,10 +62,10 @@ uniform mat4 u_view;
 
 in Geometry_Data {
     mat4 proj_view;
-    vec3 color;
+    vec4 color;
 } v_gd[];
 
-void emit_line(vec4 a_view, vec4 b_view, vec3 color) {
+void emit_line(vec4 a_view, vec4 b_view, vec4 color) {
     v_color = color;
 
     v_depth = -a_view.z;
@@ -80,7 +81,7 @@ void emit_line(vec4 a_view, vec4 b_view, vec3 color) {
 
 void main() {
     mat4 proj_view = v_gd[0].proj_view;
-    vec3 color = v_gd[0].color;
+    vec4 color = v_gd[0].color;
 
     mat4 inv_proj_view = inverse(proj_view);
 
@@ -125,7 +126,7 @@ void main() {
 FRUSTUM_FS :: `#version 460 core
 precision highp float;
 
-in vec3 v_color;
+in vec4 v_color;
 in float v_depth;
 
 out vec4 o_frag_color;
@@ -143,7 +144,7 @@ void main() {
         }
     #endif
 
-    o_frag_color = vec4(v_color, 1.0);
+    o_frag_color = v_color;
 }
 `
 
@@ -180,7 +181,7 @@ init_frustum_rdr :: proc() {
     offset += size_of(glm.vec4)
 
     gl.EnableVertexAttribArray(4)
-    gl.VertexAttribIPointer(4, 1, gl.INT, size_of(Debug_Frustum), offset)
+    gl.VertexAttribIPointer(4, 1, gl.UNSIGNED_INT, size_of(Debug_Frustum), offset)
 
     // shaders
     make_shader(&system.frustum_shader, load_shaders_source(FRUSTUM_VS, FRUSTUM_GS, FRUSTUM_FS))

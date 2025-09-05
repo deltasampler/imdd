@@ -112,11 +112,11 @@ main :: proc() {
     mesh: imdd.Debug_Mesh;
 
     when EXAMPLE == EXAMPLE_2D {
-        imdd.debug_mesh_box2(&mesh, {-192, 96, 0}, {64, 128, 0}, 0xaa0000)
-        imdd.debug_mesh_box2(&mesh, {-192, -32, 0}, {128, 64, 0}, 0x0000aa)
+        imdd.debug_mesh_box2(&mesh, {-192, 96, 0}, {64, 128, 0}, 0xaa0000_ff)
+        imdd.debug_mesh_box2(&mesh, {-192, -32, 0}, {128, 64, 0}, 0x0000aa_ff)
     } else {
-        imdd.debug_mesh_box3(&mesh, {-192, 96, 256}, {64, 128, 64}, 0xaa0000)
-        imdd.debug_mesh_box3(&mesh, {-192, 0, 256}, {128, 64, 128}, 0x0000aa)
+        imdd.debug_mesh_box3(&mesh, {-192, 96, 256}, {64, 128, 64}, 0xaa0000_ff)
+        imdd.debug_mesh_box3(&mesh, {-192, 0, 256}, {128, 64, 128}, 0x0000aa_ff)
     }
 
     imdd.build_debug_mesh(&mesh); defer imdd.destroy_debug_mesh(&mesh)
@@ -189,43 +189,43 @@ main :: proc() {
         compute_camera_view(camera)
 
         when EXAMPLE == EXAMPLE_2D {
-            imdd.debug_grid_xy({0, 0, -1}, {16384, 16384}, {32, 32}, 1, 0xffffff)
-            imdd.debug_grid_xy({0, 0, 0}, {16384, 16384}, {256, 256}, 2, 0xffffff)
+            imdd.debug_grid_xy({0, 0, -1}, {16384, 16384}, {32, 32}, 1, 0xffffff_ff)
+            imdd.debug_grid_xy({0, 0, 0}, {16384, 16384}, {256, 256}, 2, 0xffffff_ff)
 
-            imdd.debug_arrow({0, 0, 0}, {128, 0, 0}, 4, 0xff0000)
-            imdd.debug_arrow({0, 0, 0}, {0, 128, 0}, 4, 0x00ff00)
+            imdd.debug_arrow({0, 0, 0}, {128, 0, 0}, 4, 0xff0000_ff)
+            imdd.debug_arrow({0, 0, 0}, {0, 128, 0}, 4, 0x00ff00_ff)
 
-            imdd.debug_line({192, 128, 0}, {160, 183, 0}, 2, 0x00ffff);
-            imdd.debug_line({160, 183, 0}, {96, 183, 0}, 2, 0x00ffff);
-            imdd.debug_line({96, 183, 0}, {64, 128, 0}, 2, 0x00ffff);
-            imdd.debug_line({64, 128, 0}, {96, 73, 0}, 2, 0x00ffff);
-            imdd.debug_line({96, 73, 0}, {160, 73, 0}, 2, 0x00ffff);
-            imdd.debug_line({160, 73, 0}, {192, 128, 0}, 2, 0x00ffff);
+            imdd.debug_line({192, 128, 0}, {160, 183, 0}, 2, 0x00ffff_ff)
+            imdd.debug_line({160, 183, 0}, {96, 183, 0}, 2, 0x00ffff_ff)
+            imdd.debug_line({96, 183, 0}, {64, 128, 0}, 2, 0x00ffff_ff)
+            imdd.debug_line({64, 128, 0}, {96, 73, 0}, 2, 0x00ffff_ff)
+            imdd.debug_line({96, 73, 0}, {160, 73, 0}, 2, 0x00ffff_ff)
+            imdd.debug_line({160, 73, 0}, {192, 128, 0}, 2, 0x00ffff_ff)
 
-            imdd.debug_point({32, 32, 0}, 4, 0x8a7be3)
+            imdd.debug_point({32, 32, 0}, 4, 0x8a7be3_ff)
             imdd.debug_mesh(&mesh)
         } else {
-            imdd.debug_grid_xz({0, -2, 0}, {16384, 16384}, {32, 32}, 1, 0xffffff)
+            imdd.debug_grid_xz({0, -2, 0}, {16384, 16384}, {32, 32}, 1, 0xffffff_ff)
 
-            imdd.debug_point({-64, 0, 128}, 4, 0x8a7be3)
-            imdd.debug_point({0, 0, 128}, 8, 0x7be3e1)
-            imdd.debug_point({64, 0, 128}, 12, 0xe3da7b)
+            imdd.debug_point({-64, 0, 128}, 4, 0x8a7be3_ff)
+            imdd.debug_point({0, 0, 128}, 8, 0x7be3e1_ff)
+            imdd.debug_point({64, 0, 128}, 12, 0xe3da7b_ff)
 
-            imdd.debug_arrow({0, 0, 0}, {64, 0, 0}, 2, 0xcc0000)
-            imdd.debug_arrow({0, 0, 0}, {0, 64, 0}, 2, 0x00cc00)
-            imdd.debug_arrow({0, 0, 0}, {0, 0, -64}, 2, 0x0000cc)
+            imdd.debug_arrow({0, 0, 0}, {64, 0, 0}, 2, 0xcc0000_ff)
+            imdd.debug_arrow({0, 0, 0}, {0, 64, 0}, 2, 0x00cc00_ff)
+            imdd.debug_arrow({0, 0, 0}, {0, 0, -64}, 2, 0x0000cc_ff)
 
-            imdd.debug_aabb({-192, 32, -128}, {64, 64, 64}, 0xebbe60)
-            imdd.debug_cylinder_aa({-64, 32, -128}, {32, 64}, 0x9fe685)
-            imdd.debug_cone_aa({64, 32, -128}, {32, 64}, 0x4963e6)
-            imdd.debug_sphere({192, 32, -128}, 32, 0xe68ac4)
+            imdd.debug_aabb({-192, 32, -128}, {64, 64, 64}, 0xebbe60_ff)
+            imdd.debug_cylinder_aa({-64, 32, -128}, {32, 64}, 0x9fe685_ff)
+            imdd.debug_cone_aa({64, 32, -128}, {32, 64}, 0x4963e6_ff)
+            imdd.debug_sphere({192, 32, -128}, 32, 0xe68ac4_ff)
 
-            imdd.debug_frustum(debug_camera.projection * debug_camera.view, 0xd1496b)
+            imdd.debug_frustum(debug_camera.projection * debug_camera.view, 0xd1496b_ff)
             imdd.debug_mesh(&mesh)
         }
 
-        imdd.debug_text("Hello, World!", {0, 256, 1}, 64, 0xff0000)
-        imdd.debug_text("TEST", {0, 256 + 64, 1}, 64, 0x0000ff)
+        imdd.debug_text("Hello, World!", {0, 256, 1}, 64, 0xff0000_ff)
+        imdd.debug_text("TEST", {0, 256 + 64, 1}, 64, 0x0000ff_ff)
 
         imdd.debug_prepare(
             i32(camera.mode),

@@ -6,58 +6,61 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
 ## Primitives:
 
     // point
-    debug_point :: proc(position: glm.vec3, radius: f32, color: i32)
+    debug_point :: proc(position: glm.vec3, radius: f32, color: u32)
 
     // line
-    debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32)
+    debug_line :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: u32)
 
     // arrow
-    debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: i32)
+    debug_arrow :: proc(start: glm.vec3, end: glm.vec3, width: f32, color: u32)
 
     // grid from position and normal
-    debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_n :: proc(position: glm.vec3, size: glm.vec2, normal: glm.vec3, cell_size: glm.vec2, line_width: f32, color: u32)
 
     // grid on xz plane
-    debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_xz :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32)
 
     // grid on xy plane
-    debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_xy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32)
 
     // grid on zy plane
-    debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: i32)
+    debug_grid_zy :: proc(position: glm.vec3, size: glm.vec2, cell_size: glm.vec2, line_width: f32, color: u32)
 
     // axis aligned bounding box
-    debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: i32)
+    debug_aabb :: proc(position: glm.vec3, size: glm.vec3, color: u32)
 
     // axis aligned bound box (from min/max bounds)
-    debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: i32)
+    debug_aabb_bounds :: proc(min: glm.vec3, max: glm.vec3, color: u32)
 
     // oriented bounding box
-    debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: i32)
+    debug_obb :: proc(position: glm.vec3, size: glm.vec3, rotation: glm.vec3, color: u32)
 
     // cylinder (axis aligned)
-    debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32) 
+    debug_cylinder_aa :: proc(position: glm.vec3, size: glm.vec2, color: u32)
 
     // cylinder (oriented)
-    debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32)
+    debug_cylinder_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: u32)
 
     // cylinder (from point A to point B)
-    debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32)
+    debug_cylinder_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: u32)
 
     // cone (axis aligned)
-    debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: i32)
+    debug_cone_aa :: proc(position: glm.vec3, size: glm.vec2, color: u32)
 
     // cone (oriented)
-    debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: i32)
+    debug_cone_o :: proc(position: glm.vec3, size: glm.vec2, rotation: glm.vec3, color: u32)
 
     // cone (from point A to point B)
-    debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: i32)
+    debug_cone_ab :: proc(start: glm.vec3, end: glm.vec3, radius: f32, color: u32)
 
     // sphere
-    debug_sphere :: proc(position: glm.vec3, radius: f32, color: i32)
+    debug_sphere :: proc(position: glm.vec3, radius: f32, color: u32)
 
     // frustum
-    debug_frustum :: proc(proj_view: glm.mat4, color: i32)
+    debug_frustum :: proc(proj_view: glm.mat4, color: u32)
 
     // mesh
     debug_mesh :: proc(mesh: ^Debug_Mesh)
+
+    // text
+    debug_text :: proc(text: string, position: glm.vec3, size: f32, color: u32)

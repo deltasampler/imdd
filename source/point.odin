@@ -6,10 +6,10 @@ import gl "vendor:OpenGL"
 Debug_Point :: struct {
     position: glm.vec3,
     radius: f32,
-    color: i32,
+    color: u32,
 }
 
-debug_point :: proc(position: glm.vec3, radius: f32, color: i32) {
+debug_point :: proc(position: glm.vec3, radius: f32, color: u32) {
     point := &system.point_data[system.point_len]
     point.position = position
     point.radius = radius
@@ -22,9 +22,9 @@ POINT_VS :: `#version 460 core
 
     layout(location = 0) in vec3 i_position;
     layout(location = 1) in float i_radius;
-    layout(location = 2) in int i_color;
+    layout(location = 2) in uint i_color;
 
-    out vec3 v_color;
+    out vec4 v_color;
     out vec2 v_tex_coord;
     out float v_depth;
 
@@ -45,8 +45,9 @@ POINT_VS :: `#version 460 core
         vec2(1.0, 1.0)
     );
 
-    vec3 int_to_rgb(int i) {
-        return vec3(
+    vec4 unpack_rgba(uint i) {
+        return vec4(
+            (i >> 24) & 0xFF,
             (i >> 16) & 0xFF,
             (i >> 8) & 0xFF,
             i & 0xFF
@@ -57,7 +58,7 @@ POINT_VS :: `#version 460 core
         vec4 position = vec4(transpose(mat3(u_view)) * vec3(positions[gl_VertexID] * i_radius, 0.0) + i_position, 1.0);
 
         gl_Position = u_projection * u_view * position;
-        v_color = int_to_rgb(i_color);
+        v_color = unpack_rgba(i_color);
         v_tex_coord = tex_coords[gl_VertexID];
         v_depth = -(u_view * position).z;
     }
@@ -66,7 +67,7 @@ POINT_VS :: `#version 460 core
 POINT_FS :: `#version 460 core
 precision highp float;
 
-in vec3 v_color;
+in vec4 v_color;
 in vec2 v_tex_coord;
 in float v_depth;
 
@@ -92,7 +93,7 @@ void main() {
         discard;
     }
 
-    o_frag_color = vec4(v_color, 1.0);
+    o_frag_color = v_color;
 }
 `
 
@@ -123,7 +124,7 @@ init_point_rdr :: proc() {
     offset += size_of(f32)
 
     gl.EnableVertexAttribArray(2)
-    gl.VertexAttribIPointer(2, 1, gl.INT, size_of(Debug_Point), offset)
+    gl.VertexAttribIPointer(2, 1, gl.UNSIGNED_INT, size_of(Debug_Point), offset)
     gl.VertexAttribDivisor(2, 1)
 
     // shaders

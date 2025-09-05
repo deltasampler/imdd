@@ -9,10 +9,10 @@ Debug_Char :: struct {
     position: glm.vec3,
     offset: glm.vec2,
     size: f32,
-    color: i32,
+    color: u32,
 }
 
-debug_text :: proc(text: string, position: glm.vec3, size: f32, color: i32) {
+debug_text :: proc(text: string, position: glm.vec3, size: f32, color: u32) {
     pack :: proc(char: byte, flags: i32) -> i32 {
         return ((flags & 0xffffff) << 8) | (i32(char) & 0xff)
     }
@@ -37,12 +37,12 @@ TEXT_VS :: `#version 460 core
     layout(location = 1) in vec3 i_position;
     layout(location = 2) in vec2 i_offset;
     layout(location = 3) in float i_size;
-    layout(location = 4) in int i_color;
+    layout(location = 4) in uint i_color;
 
     #define BITMAP_SIZE ivec2(10, 10)
     #define CHAR_RATIO vec2(0.5, 1.0)
 
-    out vec3 v_color;
+    out vec4 v_color;
     out vec2 v_tex_coord;
     out float v_depth;
 
@@ -63,8 +63,9 @@ TEXT_VS :: `#version 460 core
         vec2(1.0, 0.0)
     );
 
-    vec3 int_to_rgb(int i) {
-        return vec3(
+    vec4 unpack_rgba(uint i) {
+        return vec4(
+            (i >> 24) & 0xFF,
             (i >> 16) & 0xFF,
             (i >> 8) & 0xFF,
             i & 0xFF
@@ -94,7 +95,7 @@ TEXT_VS :: `#version 460 core
         vec4 position = vec4(transpose(mat3(u_view)) * vec3(local, 0.0) + i_position, 1.0);
 
         gl_Position = u_projection * u_view * position;
-        v_color = int_to_rgb(i_color);
+        v_color = unpack_rgba(i_color);
         v_tex_coord = calc_tex_coord(unpack_char(i_char));
         v_depth = -(u_view * position).z;
     }
@@ -103,7 +104,7 @@ TEXT_VS :: `#version 460 core
 TEXT_FS :: `#version 460 core
 precision highp float;
 
-in vec3 v_color;
+in vec4 v_color;
 in vec2 v_tex_coord;
 in float v_depth;
 
@@ -123,7 +124,7 @@ void main() {
         }
     #endif
 
-    o_frag_color = texture(sa_bitmap, v_tex_coord) * vec4(v_color, 1.0);
+    o_frag_color = texture(sa_bitmap, v_tex_coord) * v_color;
 }
 `
 
