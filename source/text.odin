@@ -4,6 +4,9 @@ import "core:image/png"
 import glm "core:math/linalg/glsl"
 import gl "vendor:OpenGL"
 
+TEXT_SCREEN :: 0x000001
+TEXT_WORLD :: 0x000002
+
 Debug_Char :: struct {
     char: i32,
     position: glm.vec3,
@@ -12,16 +15,30 @@ Debug_Char :: struct {
     color: u32,
 }
 
-debug_text :: proc(text: string, position: glm.vec3, size: f32, color: u32) {
-    pack :: proc(char: byte, flags: i32) -> i32 {
-        return ((flags & 0xffffff) << 8) | (i32(char) & 0xff)
-    }
+pack :: proc(char: byte, flags: i32) -> i32 {
+    return ((flags & 0xffffff) << 8) | (i32(char) & 0xff)
+}
 
+debug_text_screen :: proc(text: string, position: glm.vec2, size: f32, color: u32) {
     len := len(text)
 
     for i in 0 ..< len {
         char := &system.text_data[system.text_len]
-        char.char = pack((text[i]) - 32, 4)
+        char.char = pack((text[i]) - 32, TEXT_SCREEN)
+        char.position = {position.x, position.y, 0}
+        char.offset = {0.5 + f32(i), -0.5}
+        char.size = size
+        char.color = color
+        system.text_len = (system.text_len + 1) % DEBUG_TEXT_CAP
+    }
+}
+
+debug_text_world :: proc(text: string, position: glm.vec3, size: f32, color: u32) {
+    len := len(text)
+
+    for i in 0 ..< len {
+        char := &system.text_data[system.text_len]
+        char.char = pack((text[i]) - 32, TEXT_WORLD)
         char.position = position
         char.offset = {-f32(len) / 2 + 0.5 + f32(i), 0}
         char.size = size
@@ -39,6 +56,8 @@ TEXT_VS :: `#version 460 core
     layout(location = 3) in float i_size;
     layout(location = 4) in uint i_color;
 
+    #define TEXT_SCREEN 0x000001
+    #define TEXT_WORLD 0x000002
     #define BITMAP_SIZE ivec2(10, 10)
     #define CHAR_RATIO vec2(0.5, 1.0)
 
@@ -46,6 +65,7 @@ TEXT_VS :: `#version 460 core
     out vec2 v_tex_coord;
     out float v_depth;
 
+    uniform vec2 u_resolution;
     uniform mat4 u_projection;
     uniform mat4 u_view;
 
@@ -89,15 +109,27 @@ TEXT_VS :: `#version 460 core
     }
 
     void main() {
+        int ch = unpack_char(i_char);
+        int flags = unpack_flags(i_char);
+        bool is_screen = bool(flags & TEXT_SCREEN);
+
         vec2 local = positions[gl_VertexID] * 0.5 * CHAR_RATIO * i_size;
-        local += i_offset * i_size * CHAR_RATIO;
 
-        vec4 position = vec4(transpose(mat3(u_view)) * vec3(local, 0.0) + i_position, 1.0);
+        if (is_screen) {
+            local += i_offset * i_size * CHAR_RATIO;
+            local += i_position.xy * vec2(1, -1);
 
-        gl_Position = u_projection * u_view * position;
+            gl_Position = vec4(local / u_resolution * 2 + vec2(-1, 1), 0.0, 1.0);
+        } else {
+            local += i_offset * i_size * CHAR_RATIO;
+
+            vec4 position = vec4(transpose(mat3(u_view)) * vec3(local, 0.0) + i_position, 1.0);
+            gl_Position = u_projection * u_view * position;
+            v_depth = -(u_view * position).z;
+        }
+
         v_color = unpack_rgba(i_color);
-        v_tex_coord = calc_tex_coord(unpack_char(i_char));
-        v_depth = -(u_view * position).z;
+        v_tex_coord = calc_tex_coord(ch);
     }
 `
 

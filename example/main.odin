@@ -3,7 +3,7 @@ package main
 import "core:fmt"
 import sdl "vendor:sdl3"
 import gl "vendor:OpenGL"
-import "imdd"
+import imdd "imdd/source"
 
 WINDOW_TITLE :: "Odin SDL3 Template"
 WINDOW_WIDTH :: 960
@@ -224,8 +224,10 @@ main :: proc() {
             imdd.debug_mesh(&mesh)
         }
 
-        imdd.debug_text("Hello, World!", {0, 256, 1}, 64, 0xff0000_ff)
-        imdd.debug_text("TEST", {0, 256 + 64, 1}, 64, 0x0000ff_ff)
+        imdd.debug_text_world("Hello, World!", {0, 256, 1}, 64, 0xff0000_ff)
+        imdd.debug_text_world("TEST", {0, 256 + 64, 1}, 64, 0x0000ff_ff)
+        imdd.debug_text_screen("First line", {0, 0}, 32, 0xff0000_ff)
+        imdd.debug_text_screen("Second line", {0, 32}, 32, 0xff00ff_ff)
 
         imdd.debug_prepare(
             i32(camera.mode),

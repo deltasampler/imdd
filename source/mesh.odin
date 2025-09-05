@@ -190,7 +190,7 @@ void main() {
     vec3 final = (ambient + diffuse + specular) * v_color.rgb;
     vec3 result = pow(final, vec3(1.0 / 2.2));
 
-    o_frag_color = vec4(result, 1.0);
+    o_frag_color = vec4(result, v_color.a);
     o_frag_normal = vec4(v_normal, 1.0);
 }
 `

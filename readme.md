@@ -62,5 +62,8 @@ You can take this [template](https://github.com/deltasampler/odin_sdl3_template)
     // mesh
     debug_mesh :: proc(mesh: ^Debug_Mesh)
 
-    // text
-    debug_text :: proc(text: string, position: glm.vec3, size: f32, color: u32)
+    // text (scree space)
+    debug_text_screen :: proc(text: string, position: glm.vec2, size: f32, color: u32)
+
+    // text (world space)
+    debug_text_world :: proc(text: string, position: glm.vec3, size: f32, color: u32)
